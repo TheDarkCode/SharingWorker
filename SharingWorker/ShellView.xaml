@@ -1,0 +1,155 @@
+﻿<mah:MetroWindow x:Class="SharingWorker.ShellView"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:b="clr-namespace:SharingWorker.FileHost"
+                 xmlns:cal="http://www.caliburnproject.org"
+                 xmlns:local="clr-namespace:SharingWorker"
+                 xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                 FontSize="14" Width="960" Height="600"
+                 GlowBrush="{StaticResource AccentColorBrush}"
+                 cal:Message.Attach="[Event Closing] = [Action Closing()]"
+                 >
+    <mah:MetroWindow.Resources>
+        <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+    </mah:MetroWindow.Resources>
+    <mah:MetroWindow.IconTemplate>
+        <DataTemplate>
+            <Image Margin="3,0,0,0" Width="38" Height="20.5002" Source="{TemplateBinding Content}" />
+        </DataTemplate>
+    </mah:MetroWindow.IconTemplate>
+    <mah:MetroWindow.Icon>
+        <DrawingImage>
+            <DrawingImage.Drawing>
+                <GeometryDrawing Brush="{StaticResource AccentSelectedColorBrush}"
+                                 Geometry="F1 M 49.0833,33.25C 53.4555,33.25 57,36.7944 57,41.1666C 57,45.5389 53.4045,48.9999 48.9999,49L 41,49L 41,43L 45,43L 39,37L 33,43L 37,43L 37,49L 23,49.0001C 20.8139,49 19,47.3111 19,45.125C 19,43.1866 20.3931,41.5737 22.2327,41.233L 22.1667,40.3749C 22.1667,37.3993 24.5122,34.9712 27.4553,34.8389C 28.7579,31.1462 32.2782,28.4999 36.4167,28.4999C 40.3458,28.4999 43.7179,30.8853 45.1637,34.2868C 46.3193,33.627 47.6573,33.25 49.0833,33.25 Z "/>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+    </mah:MetroWindow.Icon>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Menu FontSize="14">
+            <MenuItem Header="Image" VerticalAlignment="Center">
+                <MenuItem Header=" Select Upload Images" cal:Message.Attach="[Event Click] = [Action SelectUploadImages()]"/>
+                <Separator />
+                <MenuItem Header=" ImgChili" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgChili.Enabled}"/>
+                <MenuItem Header=" ImgMega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgMega.Enabled}"/>
+                <MenuItem Header=" ImgDrive" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgDrive.Enabled}"/>
+                <MenuItem Header=" ImgRock" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgRock.Enabled}"/>
+                <MenuItem Header=" ImgSpice" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgSpice.Enabled}"/>
+                <Separator />
+                <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetMega}"/>
+                <MenuItem Header=" Uploadable" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetUploadable}"/>
+                <MenuItem Header=" Rapidgator" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetRapidgator}"/>
+                <Separator />
+                <MenuItem Header=" BinBox" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetBinBox}"/>
+                <MenuItem Header=" Linkbucks" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetLinkbucks}"/>
+            </MenuItem>
+            <MenuItem Header="Video">
+                <MenuItem Header=" Select Videos" cal:Message.Attach="[Event Click] = [Action SelectVideos()]"/>
+                <Separator/>
+                <MenuItem Header=" Compress to RAR" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding CompressToRar}"/>
+                <MenuItem Header=" Get Thumbnail" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetThumbnail}"/>
+                <MenuItem Header=" Get Cover" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetCover}"/>
+            </MenuItem>
+            <MenuItem Header="Post">
+                <MenuItem Header=" Restore from Binbox Backup" cal:Message.Attach="[Event Click] = [Action Restore('BinboxBackup')]"/>
+                <MenuItem Header=" Restore from Blog Post" cal:Message.Attach="[Event Click] = [Action Restore('BlogPost')]"/>
+                <MenuItem Header=" Restore from Link Backup" cal:Message.Attach="[Event Click] = [Action Restore('LinksBackup')]"/>
+                <Separator/>
+                <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding CheckMega}"/>
+                <MenuItem Header=" Uploadable" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding CheckUploadable}"/>
+                <MenuItem Header=" BinBox" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding CheckBinbox}"/>
+            </MenuItem>
+            <MenuItem Header="Tool">
+                <MenuItem Header=" Create MEGA account" cal:Message.Attach="[Event Click] = [Action CreateMegaAccount()]"/>
+                <Separator/>
+                <RadioButton Content="TempMail" IsChecked="{Binding MailSource, ConverterParameter=TempMail, Converter={StaticResource EnumToBooleanConverter}}" FontSize="14"/>
+                <RadioButton Content="Mailinator" IsChecked="{Binding MailSource, ConverterParameter=Mailinator, Converter={StaticResource EnumToBooleanConverter}}" FontSize="14"/>
+            </MenuItem>
+        </Menu>
+        <local:BindableListBox Grid.Row="1" x:Name="UploadResults" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectedItems="{Binding SelectedUploadInfos}" Style="{StaticResource {x:Type ListBox}}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" SelectionMode="Extended">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Id}" Grid.RowSpan="2" VerticalAlignment="Center" Margin="5,0,0,0">
+                            <TextBlock.Foreground>
+                                <SolidColorBrush Color="{Binding IdColor}"/>
+                            </TextBlock.Foreground>
+                        </TextBlock>
+                        <TextBox Text="{Binding WebLinks1}" Grid.Row="0" Grid.Column="1" IsReadOnly="True" TextWrapping="Wrap" Height="50"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="{Binding WarningBrush1}"/>
+                        <TextBox Text="{Binding WebLinks2}" Grid.Row="0" Grid.Column="2" IsReadOnly="True" TextWrapping="Wrap" Height="50"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="{Binding WarningBrush2}"/>
+                        <TextBox Text="{Binding WebLinks3}" Grid.Row="0" Grid.Column="3" IsReadOnly="True" TextWrapping="Wrap" Height="50"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="{Binding WarningBrush3}"/>
+                        <TextBox Text="{Binding WebLinks4}" Grid.Row="0" Grid.Column="4" IsReadOnly="True" TextWrapping="Wrap" Height="50"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="{Binding WarningBrush4}"/>
+                        <TextBox Text="{Binding ForumLinks1}" Grid.Row="1" Grid.Column="1" IsReadOnly="True" TextWrapping="Wrap" Height="50"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="{Binding WarningBrush1}"/>
+                        <TextBox Text="{Binding ForumLinks2}" Grid.Row="1" Grid.Column="2" IsReadOnly="True" TextWrapping="Wrap" Height="50"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="{Binding WarningBrush2}"/>
+                        <TextBox Text="{Binding ForumLinks3}" Grid.Row="1" Grid.Column="3" IsReadOnly="True" TextWrapping="Wrap" Height="50"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="{Binding WarningBrush3}"/>
+                        <TextBox Text="{Binding ForumLinks4}" Grid.Row="1" Grid.Column="4" IsReadOnly="True" TextWrapping="Wrap" Height="50"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="{Binding WarningBrush4}"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Remove" cal:Message.Attach="[Event Click] = [RemoveItem()]"/>
+                    <MenuItem Header="Remove All" cal:Message.Attach="[Event Click] = [RemoveAll()]"/>
+                    <Separator/>
+                    <MenuItem Header="Open Binbox Backups" cal:Message.Attach="[Event Click] = [OpenBinboxBackups()]"/>
+                </ContextMenu>
+            </ListBox.ContextMenu>
+        </local:BindableListBox>
+        <StatusBar Grid.Row="2" FontSize="14" Panel.ZIndex="1" Background="Black">
+            <StackPanel Orientation="Horizontal" Margin="0,5" >
+                <Button Content="Process Videos" IsEnabled="{Binding CanProcess, Mode=TwoWay}" cal:Message.Attach="[Event Click] = [Action ProcessVideos()]" Margin="10,0,0,0" Width="120" />
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="10,0,5,0"/>
+                <Label Content="Login&#x0a; Status" VerticalAlignment="Center" />
+                <StackPanel Margin="5,0,0,0" VerticalAlignment="Center">
+                    <CheckBox Content="ImgChili" IsChecked="{Binding ImgChili.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
+                    <CheckBox Content="ImgMega" IsChecked="{Binding ImgMega.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13" />
+                </StackPanel>
+                <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
+                    <CheckBox Content="ImgDrive" IsChecked="{Binding ImgDrive.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
+                    <CheckBox Content="ImgRock" IsChecked="{Binding ImgRock.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+                <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
+                    <CheckBox Content="ImgSpice" IsChecked="{Binding ImgSpice.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
+                    <CheckBox Content="Blogger" IsChecked="{Binding BloggerLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+                <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
+                    <CheckBox Content="MEGA" IsChecked="{Binding MegaLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
+                    <CheckBox Content="Rapidgator" IsChecked="{Binding RapidgatorLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+                <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
+                </StackPanel>
+                <Button Content="Login" cal:Message.Attach="[Event Click] = [Action StartLogin()]" Margin="13,0,0,0" Width="70"/>
+                <Button Content="Upload" IsEnabled="{Binding CanUpload, Mode=TwoWay}" cal:Message.Attach="[Event Click] = [Action Upload()]" Margin="10,0,0,0" Width="70"/>
+            </StackPanel>
+            <StatusBarItem HorizontalAlignment="Right" Margin="0,0,5,0">
+                <TextBlock x:Name="Message" TextWrapping="Wrap"/>
+            </StatusBarItem>
+        </StatusBar>
+        <b:Binbox x:Name="BinBoxWorker" Grid.Row="2" Visibility="Visible" Width="0" Height="0"/>
+    </Grid>
+</mah:MetroWindow>
