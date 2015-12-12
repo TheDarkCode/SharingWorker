@@ -210,5 +210,4 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
-
-SharingWorker.exe.config
+/SharingWorker.exe.config
