@@ -54,6 +54,13 @@ namespace SharingWorker.Video
                 const string find = "-mesubuta";
                 return fileName.Substring(0, fileName.IndexOf(find) + find.Length);
             }
+
+            if (fileName.EndsWith("_full"))
+            {
+                var rmIdx = fileName.LastIndexOf("_full");
+                if (rmIdx > 0) fileName = fileName.Remove(rmIdx);
+            }
+
             return fileName;
         }
 
@@ -139,6 +146,14 @@ namespace SharingWorker.Video
                 if (id.Contains("c0930") || id.Contains("C0930"))
                 {
                     return await GetVideoInfo_c0930(id, lang);
+                }
+                if (id.Contains("av-sikou"))
+                {
+                    return await GetVideoInfo_avsikou(id, lang);
+                }
+                if (id.Contains("heydouga"))
+                {
+                    return await GetVideoInfo_heydouga(id, lang);
                 }
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
                 {
@@ -909,6 +924,91 @@ namespace SharingWorker.Video
                             {
                                 ret.Actresses = responseString.Substring(start, end - start);
                                 ret.Title = string.Format("C0930 人妻斬り {0} {1}", num, ret.Actresses);
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_avsikou(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("av-sikou_", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://www.av-sikou.com/moviepages/{0}/index.html", num);
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var response = await client.GetByteArrayAsync(url);
+                        var responseString = Encoding.GetEncoding("euc-jp").GetString(response, 0, response.Length - 1);
+
+                        var search = "<title>";
+                        var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf(" |", start, StringComparison.Ordinal);
+                            if (end >= 0)
+                            {
+                                var title = responseString.Substring(start, end - start);
+                                ret.Title = string.Format("AV志向 {0} {1}", num, title);
+
+                                var actStart = title.LastIndexOf("- ");
+                                if (actStart > 0)
+                                {
+                                    ret.Actresses = title.Substring(actStart + 2);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_heydouga(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("heydouga-", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://www.heydouga.com/moviepages/{0}/index.html", num.Replace("-", "/"));
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var response = await client.GetByteArrayAsync(url);
+                        var responseString = Encoding.GetEncoding("euc-jp").GetString(response, 0, response.Length - 1);
+
+                        var search = "<title>";
+                        var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf(" - HEY動画", start, StringComparison.Ordinal);
+                            if (end >= 0)
+                            {
+                                var title = responseString.Substring(start, end - start);
+                                title = title.Replace("&#45;", "-");
+                                ret.Title = string.Format("Heydouga {0} {1}", num, title);
+
+                                var actStart = title.LastIndexOf("- ");
+                                if (actStart > 0)
+                                {
+                                    ret.Actresses = title.Substring(actStart + 2);
+                                }
                             }
                         }
                     }

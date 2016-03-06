@@ -144,6 +144,15 @@ namespace SharingWorker.Video
             {
                 return new List<string> { string.Format("http://www.c0930.com/moviepages/{0}/images/movie.jpg", fileName.Substring(6)) };
             }
+            if (fileName.Contains("av-sikou"))
+            {
+                return new List<string> { string.Format("http://www.av-sikou.com/contents/{0}/images/movie.jpg", fileName.Replace("av-sikou_", string.Empty)) };
+            }
+            if (fileName.Contains("heydouga"))
+            {
+                fileName = fileName.Replace("heydouga-", string.Empty).Replace("-", "/");
+                return new List<string> { string.Format("http://image01.heydouga.com/contents/{0}/player_thumb.jpg", fileName) };
+            }
 
             return new List<string> { await QueryDmmImage(fileName) };
         }
