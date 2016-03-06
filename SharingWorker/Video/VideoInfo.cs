@@ -128,6 +128,18 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_mesubuta(id, lang);
                 }
+                if (id.Contains("h0930") || id.Contains("H0930"))
+                {
+                    return await GetVideoInfo_h0930(id, lang);
+                }
+                if (id.Contains("h4610") || id.Contains("H4610"))
+                {
+                    return await GetVideoInfo_h4610(id, lang);
+                }
+                if (id.Contains("c0930") || id.Contains("C0930"))
+                {
+                    return await GetVideoInfo_c0930(id, lang);
+                }
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
                 {
                     return new VideoInfo {Title = "", Actresses = ""};
@@ -198,7 +210,7 @@ namespace SharingWorker.Video
             return ret;
         }
 
-        private static async Task<VideoInfo> GetVideoInfo_tokyohot(string id, QueryLang lang)
+        public static async Task<VideoInfo> GetVideoInfo_tokyohot(string id, QueryLang lang)
         {
             var url = string.Empty;
             var ret = new VideoInfo { Title = "", Actresses = "" };
@@ -207,62 +219,37 @@ namespace SharingWorker.Video
             switch (lang)
             {
                 case QueryLang.TW:
-                    url = string.Format("http://www.tokyo-hot.com/j/new_j.html");
+                    url = string.Format("http://www.tokyo-hot.com/product/?q={0}", num);
                     using (var handler = new HttpClientHandler())
                     using (var client = new HttpClient(handler))
                     {
                         var response = await client.GetByteArrayAsync(url);
-                        var responseString = Encoding.GetEncoding("shift_jis").GetString(response, 0, response.Length - 1);
-
-                        var start = responseString.IndexOf(num, 0, StringComparison.Ordinal);
+                        var responseString = Encoding.UTF8.GetString(response, 0, response.Length - 1);
+                        
+                        var start = responseString.IndexOf("<div class=\"description2\">", 0, StringComparison.Ordinal);
                         if (start >= 0)
                         {
-                            start = responseString.IndexOf("東京熱の", start, StringComparison.Ordinal) + 4;
-                            var end = responseString.IndexOf("『", start, StringComparison.Ordinal);
+                            var titleString = "<div class=\"title\">";
+                            var actorString = "<div class=\"actor\">";
+                            
+                            start = responseString.IndexOf(titleString, start, StringComparison.Ordinal) + titleString.Length;
+                            var end = responseString.IndexOf("</div>", start, StringComparison.Ordinal);
                             if (end >= 0)
                             {
-                                ret.Actresses = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start).Replace("&", string.Empty);
+                                ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
 
-                                start = end + 1;
-                                end = responseString.IndexOf("』", start, StringComparison.Ordinal);
+                                start = responseString.IndexOf(actorString, start, StringComparison.Ordinal) + actorString.Length;
+                                end = responseString.IndexOf(" (作品番号:", start, StringComparison.Ordinal);
                                 if (end >= 0)
                                 {
-                                    ret.Title = end - start <= 0 ? string.Empty : string.Format("Tokyo Hot {0} {1} {2}", num, responseString.Substring(start, end - start), ret.Actresses);
+                                    ret.Actresses = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+                                    ret.Title = string.Format("Tokyo Hot {0} {1} {2}", num, ret.Title, ret.Actresses);
                                 }
                             }
                         }
                     }
                     break;
                 case QueryLang.EN:
-                    url = string.Format("http://www.tokyo-hot.com/e/new_video000_e.html");
-                    using (var handler = new HttpClientHandler())
-                    using (var client = new HttpClient(handler))
-                    {
-                        var response = await client.GetByteArrayAsync(url);
-                        var responseString = Encoding.GetEncoding("iso-8859-1").GetString(response, 0, response.Length - 1);
-
-                        var start = responseString.IndexOf(string.Format("./{0}", num), 0, StringComparison.Ordinal);
-                        if (start >= 0)
-                        {
-                            start = start + 1;
-                            var end = responseString.IndexOf("e.html", start, StringComparison.Ordinal) + 6;
-                            if (end < 0) return ret;
-                            var url1 = end - start <= 0 ? string.Empty : "http://www.tokyo-hot.com/e" + responseString.Substring(start, end - start);
-                            if (string.IsNullOrEmpty(url1)) return ret;
-
-                            var numPage = await client.GetByteArrayAsync(url1);
-                            var numPageString = Encoding.GetEncoding("iso-8859-1").GetString(numPage, 0, numPage.Length - 1);
-
-                            start = numPageString.IndexOf("<title>", 0, StringComparison.Ordinal);
-                            end = numPageString.IndexOf("</title>", start, StringComparison.Ordinal);
-                            if (end - start > 0)
-                            {
-                                start += 7;
-                                ret.Actresses = numPageString.Substring(start, end - start);
-                                ret.Title = string.Format("Tokyo Hot {0} - {1}", num, ret.Actresses);
-                            }
-                        }
-                    }
                     break;
             }
             return ret;
@@ -820,6 +807,114 @@ namespace SharingWorker.Video
                         break;
                 }
 
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_h0930(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Contains("h0930") ? id.Replace("h0930-", string.Empty) : id.Replace("H0930-", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://www.h0930.com/moviepages/{0}/index.html", num);
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var response = await client.GetByteArrayAsync(url);
+                        var responseString = Encoding.GetEncoding("euc-jp").GetString(response, 0, response.Length - 1);
+
+                        var search = "エッチな0930 ";
+                        var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf("</title>", start, StringComparison.Ordinal);
+                            if (end >= 0)
+                            {
+                                ret.Actresses = responseString.Substring(start, end - start);
+                                ret.Title = string.Format("H0930 {0} {1}", num, ret.Actresses);
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_h4610(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Contains("h4610") ? id.Replace("h4610-", string.Empty) : id.Replace("H4610-", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://www.h4610.com/moviepages/{0}/index.html", num);
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var response = await client.GetByteArrayAsync(url);
+                        var responseString = Encoding.GetEncoding("euc-jp").GetString(response, 0, response.Length - 1);
+
+                        var search = "＠エッチな4610 ";
+                        var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf("</title>", start, StringComparison.Ordinal);
+                            if (end >= 0)
+                            {
+                                ret.Actresses = responseString.Substring(start, end - start);
+                                ret.Title = string.Format("H4610 {0} {1}", num, ret.Actresses);
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_c0930(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Contains("c0930") ? id.Replace("c0930-", string.Empty) : id.Replace("C0930-", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://www.c0930.com/moviepages/{0}/index.html", num);
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var response = await client.GetByteArrayAsync(url);
+                        var responseString = Encoding.GetEncoding("euc-jp").GetString(response, 0, response.Length - 1);
+
+                        var search = "＠人妻斬り ";
+                        var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf("</title>", start, StringComparison.Ordinal);
+                            if (end >= 0)
+                            {
+                                ret.Actresses = responseString.Substring(start, end - start);
+                                ret.Title = string.Format("C0930 人妻斬り {0} {1}", num, ret.Actresses);
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
             }
             return ret;
         }

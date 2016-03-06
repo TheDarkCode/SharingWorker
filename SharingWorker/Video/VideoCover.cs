@@ -45,6 +45,17 @@ namespace SharingWorker.Video
 
         public static async Task<bool> GetCover(string fileName)
         {
+            for (int i = 1; i < 7; i++)
+            {
+                if (!fileName.EndsWith(string.Format("hd{0}", i))) continue;
+                var rmIdx = fileName.LastIndexOf("_");
+                if (rmIdx > 0)
+                {
+                    fileName = fileName.Remove(rmIdx);
+                    break;
+                }
+            }
+            
             var coverUrls = await GetCoverImageUrl(fileName);
             if (!coverUrls.Any()) return false;
 
@@ -52,8 +63,14 @@ namespace SharingWorker.Video
 
             for (int i = 0; i < coverUrls.Count; i++)
             {
-                if (!fileName.Contains("mesubuta") && !fileName.Contains("mura") && (fileName.Last() == 'A' || fileName.Last() == 'a')) fileName = fileName.Substring(0, fileName.Length - 1);
+                if (!fileName.Contains("mesubuta") && !fileName.Contains("mura") && (fileName.Last() == 'A' || fileName.Last() == 'a'))
+                    fileName = fileName.Substring(0, fileName.Length - 1);
+
+                if (!fileName.Contains("carib") && (fileName.Last() == 'B' || fileName.Last() == 'b'))
+                    continue;
+
                 var outputPath = i == 0 ? fileName + "pl.jpg" : fileName + string.Format("pl{0}.jpg", i);
+                if (File.Exists(outputPath)) continue;
                 
                 using (var client = new WebClient())
                 {
@@ -115,13 +132,25 @@ namespace SharingWorker.Video
             {
                 return new List<string>(await GetTokyoHotCover(fileName.Replace("TokyoHot_", string.Empty)));
             }
+            if (fileName.Contains("h4610") || fileName.Contains("H4610"))
+            {
+                return new List<string> { string.Format("http://www.h4610.com/moviepages/{0}/images/movie.jpg", fileName.Substring(6)) };
+            }
+            if (fileName.Contains("h0930") || fileName.Contains("H0930"))
+            {
+                return new List<string> { string.Format("http://www.h0930.com/moviepages/{0}/images/movie.jpg", fileName.Substring(6)) };
+            }
+            if (fileName.Contains("c0930") || fileName.Contains("C0930"))
+            {
+                return new List<string> { string.Format("http://www.c0930.com/moviepages/{0}/images/movie.jpg", fileName.Substring(6)) };
+            }
 
             return new List<string> { await QueryDmmImage(fileName) };
         }
 
         private static async Task<List<string>> GetTokyoHotCover(string num)
         {
-            var url = "http://www.tokyo-hot.com/j/new_j.html";
+            var url = string.Format("http://www.tokyo-hot.com/product/?q={0}", num);
 
             using (var handler = new HttpClientHandler())
             using (var client = new HttpClient(handler))
@@ -130,15 +159,15 @@ namespace SharingWorker.Video
                 {
                     var ret = new List<string>();
                     var response = await message.Content.ReadAsStringAsync();
-                    var numStart = response.IndexOf(num, 0, StringComparison.Ordinal);
-                    if (numStart < 0) return ret;
-                    var start = response.IndexOf("/new/new", numStart, StringComparison.Ordinal);
+                    const string find = "class=\"rm\"><img src=\"";
+                    var start = response.IndexOf(find, 0, StringComparison.Ordinal);
+                    if (start < 0) return ret;
+                    start = start + find.Length;
+
                     var end = response.IndexOf(".jpg", start, StringComparison.Ordinal) + 4;
                     var image = end - start <= 0 ? string.Empty : response.Substring(start, end - start);
-                    var cover1 = "http://www.tokyo-hot.com" + image;
-                    var cover2 = cover1.Replace(".jpg", "b.jpg");
-                    ret.Add(cover1);
-                    ret.Add(cover2);
+                    image = image.Replace("220x124", "820x462");
+                    ret.Add(image);
                     return ret;
                 }
             }
