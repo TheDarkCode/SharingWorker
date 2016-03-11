@@ -45,9 +45,17 @@ namespace SharingWorker.Video
 
         public static async Task<bool> GetCover(string fileName)
         {
-            for (int i = 1; i < 7; i++)
+            for (int i = 0; i < 7; i++)
             {
-                if (!fileName.EndsWith(string.Format("hd{0}", i))) continue;
+                if (i == 0)
+                {
+                    if (!fileName.EndsWith("hd")) continue;
+                }
+                else
+                {
+                    if (!fileName.EndsWith(string.Format("hd{0}", i))) continue;
+                }
+
                 var rmIdx = fileName.LastIndexOf("_");
                 if (rmIdx > 0)
                 {
@@ -152,6 +160,10 @@ namespace SharingWorker.Video
             {
                 fileName = fileName.Replace("heydouga-", string.Empty).Replace("-", "/");
                 return new List<string> { string.Format("http://image01.heydouga.com/contents/{0}/player_thumb.jpg", fileName) };
+            }
+            if (fileName.Contains("1000giri"))
+            {
+                return new List<string> { string.Format("http://www.1000giri.net/gallery/{0}/images/swf_f.jpg", fileName.Replace("1000giri-", string.Empty)) };
             }
 
             return new List<string> { await QueryDmmImage(fileName) };

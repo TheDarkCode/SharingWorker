@@ -155,6 +155,10 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_heydouga(id, lang);
                 }
+                if (id.Contains("1000giri"))
+                {
+                    return await GetVideoInfo_1000giri(id, lang);
+                }
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
                 {
                     return new VideoInfo {Title = "", Actresses = ""};
@@ -1009,6 +1013,42 @@ namespace SharingWorker.Video
                                 {
                                     ret.Actresses = title.Substring(actStart + 2);
                                 }
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_1000giri(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("1000giri-", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://www.1000giri.net/moviepages/{0}/index.html", num);
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var response = await client.GetByteArrayAsync(url);
+                        var responseString = Encoding.GetEncoding("euc-jp").GetString(response, 0, response.Length - 1);
+
+                        var search = "<title>";
+                        var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf("</title>", start, StringComparison.Ordinal);
+                            if (end >= 0)
+                            {
+                                var title = responseString.Substring(start, end - start);
+                                ret.Title = title.Replace(" 無修正 画像 動画 |", string.Empty);
                             }
                         }
                     }
