@@ -71,7 +71,7 @@ namespace SharingWorker
             this.windowManager = windowManager;
         }
 
-        public async void SelectUploadImages()
+        public void SelectUploadImages()
         {
             var dlg = new OpenFileDialog
             {

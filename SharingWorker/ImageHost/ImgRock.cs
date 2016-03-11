@@ -77,7 +77,12 @@ namespace SharingWorker.ImageHost
             LoggedIn = false;
             cookies = new CookieContainer();
 
-            using (var handler = new HttpClientHandler { CookieContainer = cookies })
+            using (var handler = new HttpClientHandler
+            {
+                CookieContainer = cookies,
+                //Proxy = new WebProxy("proxy.hinet.net:80"),
+                //UseProxy = true,
+            })
             using (var client = new HttpClient(handler))
             {
                 client.BaseAddress = new Uri(Url);
@@ -141,6 +146,8 @@ namespace SharingWorker.ImageHost
                 using (var handler = new HttpClientHandler
                 {
                     CookieContainer = cookies,
+                    //Proxy = new WebProxy("proxy.hinet.net:80"),
+                    //UseProxy = true,
                     //AutomaticDecompression = DecompressionMethods.GZip,
                 })
                 using (var client = new HttpClient(handler))

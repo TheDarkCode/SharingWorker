@@ -37,9 +37,19 @@ namespace SharingWorker
     {
         private static int imageHostIndex;
         private static readonly Random rnd = new Random();
-        private static readonly string outputPath_l = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\share_l.txt";
-        private static readonly string outputPath_w = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\share_w.txt";
-        private static readonly string outputPath_blog = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\share_blog.txt";
+
+        private static readonly string outputPath_l =
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\share_l.txt";
+
+        private static readonly string outputPath_lh =
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\share_lh.txt";
+
+        private static readonly string outputPath_w =
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\share_w.txt";
+
+        private static readonly string outputPath_blog =
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\share_blog.txt";
+
         public static readonly string[] UploadPaths = ConfigurationManager.AppSettings["UploadFolder"].Split(';');
 
         public List<UploadImage> UploadList { get; set; }
@@ -49,14 +59,15 @@ namespace SharingWorker
         {
             Id = id;
             idColor = Colors.White;
-            
+
             WarningBrush1 = SystemColors.ActiveBorderBrush;
             WarningBrush2 = SystemColors.ActiveBorderBrush;
             WarningBrush3 = SystemColors.ActiveBorderBrush;
             WarningBrush4 = SystemColors.ActiveBorderBrush;
         }
-        
+
         private string id;
+
         public string Id
         {
             get { return id; }
@@ -68,12 +79,10 @@ namespace SharingWorker
         }
 
         private Color idColor;
+
         public Color IdColor
         {
-            get
-            {
-                return idColor;
-            }
+            get { return idColor; }
             set
             {
                 idColor = value;
@@ -82,12 +91,10 @@ namespace SharingWorker
         }
 
         private SolidColorBrush warningBrush1;
+
         public SolidColorBrush WarningBrush1
         {
-            get
-            {
-                return warningBrush1;
-            }
+            get { return warningBrush1; }
             set
             {
                 warningBrush1 = value;
@@ -96,12 +103,10 @@ namespace SharingWorker
         }
 
         private SolidColorBrush warningBrush2;
+
         public SolidColorBrush WarningBrush2
         {
-            get
-            {
-                return warningBrush2;
-            }
+            get { return warningBrush2; }
             set
             {
                 warningBrush2 = value;
@@ -110,12 +115,10 @@ namespace SharingWorker
         }
 
         private SolidColorBrush warningBrush3;
+
         public SolidColorBrush WarningBrush3
         {
-            get
-            {
-                return warningBrush3;
-            }
+            get { return warningBrush3; }
             set
             {
                 warningBrush3 = value;
@@ -124,20 +127,19 @@ namespace SharingWorker
         }
 
         private SolidColorBrush warningBrush4;
+
         public SolidColorBrush WarningBrush4
         {
-            get
-            {
-                return warningBrush4;
-            }
+            get { return warningBrush4; }
             set
             {
                 warningBrush4 = value;
                 NotifyOfPropertyChange(() => WarningBrush4);
             }
         }
-        
+
         private string webLinks1;
+
         public string WebLinks1
         {
             get { return webLinks1; }
@@ -149,6 +151,7 @@ namespace SharingWorker
         }
 
         private string webLinks2;
+
         public string WebLinks2
         {
             get { return webLinks2; }
@@ -160,6 +163,7 @@ namespace SharingWorker
         }
 
         private string webLinks3;
+
         public string WebLinks3
         {
             get { return webLinks3; }
@@ -171,6 +175,7 @@ namespace SharingWorker
         }
 
         private string webLinks4;
+
         public string WebLinks4
         {
             get { return webLinks4; }
@@ -182,6 +187,7 @@ namespace SharingWorker
         }
 
         private string forumLinks1;
+
         public string ForumLinks1
         {
             get { return forumLinks1; }
@@ -193,6 +199,7 @@ namespace SharingWorker
         }
 
         private string forumLinks2;
+
         public string ForumLinks2
         {
             get { return forumLinks2; }
@@ -204,6 +211,7 @@ namespace SharingWorker
         }
 
         private string forumLinks3;
+
         public string ForumLinks3
         {
             get { return forumLinks3; }
@@ -215,6 +223,7 @@ namespace SharingWorker
         }
 
         private string forumLinks4;
+
         public string ForumLinks4
         {
             get { return forumLinks4; }
@@ -225,22 +234,22 @@ namespace SharingWorker
             }
         }
 
-        public async Task WriteOutput(string fileLinks1, string fileLinks2)
+        public async Task WriteOutput(string megaLinks, string rgLinks)
         {
             string imageCode = null;
             string imageCodeBlog = null;
+            bool isCensored = true;
 
             var title = id;
-
-            if (char.IsDigit(id, 0) || id.Contains("heyzo") || id.Contains("TokyoHot") || id.Contains("gachi"))
+            if (char.IsDigit(id, 0) || id.Contains("heyzo") || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV")
+                || id.Contains("H0930") || id.Contains("h0930") || id.Contains("H4610") || id.Contains("h4610") || id.Contains("C0930") || id.Contains("c0930")
+                || id.Contains("heydouga") || id.Contains("av-sikou"))
             {
-                imageCode = forumLinks1;
-                imageCodeBlog = webLinks1;
+                isCensored = false;
             }
             else
             {
                 title = id.ToUpper();
-
                 int dash = 0;
                 for (int i = 0; i < title.Length - 1; i++)
                 {
@@ -251,48 +260,54 @@ namespace SharingWorker
                     }
                 }
                 if (dash > 0) title = title.Insert(dash, "-");
-
-                switch (imageHostIndex % 4)
-                {
-                    case 0:
-                        imageCode = ForumLinks1;
-                        imageCodeBlog = WebLinks1;
-                        break;
-                    case 1:
-                        imageCode = ForumLinks2;
-                        imageCodeBlog = WebLinks2;
-                        break;
-                    case 2:
-                        imageCode = ForumLinks3;
-                        imageCodeBlog = WebLinks3;
-                        break;
-                    case 3:
-                        imageCode = ForumLinks4;
-                        imageCodeBlog = WebLinks4;
-                        break;
-                }
-                
-                if (string.IsNullOrEmpty(imageCode))
-                {
-                    imageCode = new List<string> { ForumLinks4, ForumLinks2, ForumLinks3, ForumLinks1 }.Where(links => !string.IsNullOrEmpty(links)).Random();
-                }
-                if (string.IsNullOrEmpty(imageCodeBlog))
-                {
-                    imageCodeBlog = new List<string> { WebLinks4, WebLinks2, WebLinks3, WebLinks1 }.Where(links => !string.IsNullOrEmpty(links)).Random();
-                }
-
-                imageHostIndex++;
             }
+
+            switch (imageHostIndex%4)
+            {
+                case 0:
+                    imageCode = ForumLinks1;
+                    imageCodeBlog = WebLinks2;
+                    break;
+                case 1:
+                    imageCode = ForumLinks2;
+                    imageCodeBlog = WebLinks3;
+                    break;
+                case 2:
+                    imageCode = ForumLinks3;
+                    imageCodeBlog = WebLinks4;
+                    break;
+                case 3:
+                    imageCode = ForumLinks4;
+                    imageCodeBlog = WebLinks1;
+                    break;
+            }
+
+            if (string.IsNullOrEmpty(imageCode))
+            {
+                imageCode =
+                    new List<string> {ForumLinks4, ForumLinks2, ForumLinks3, ForumLinks1}.Where(
+                        links => !string.IsNullOrEmpty(links)).Random();
+            }
+            if (string.IsNullOrEmpty(imageCodeBlog))
+            {
+                imageCodeBlog =
+                    new List<string> {WebLinks4, WebLinks2, WebLinks3, WebLinks1}.Where(
+                        links => !string.IsNullOrEmpty(links)).Random();
+            }
+
+            imageHostIndex++;
 
             try
             {
                 string filePath = null;
                 string uploadPath = null;
-                
+
                 foreach (var path in UploadPaths)
                 {
-                    if(!Directory.Exists(path)) continue;
-                    filePath = Directory.GetFiles(path, string.Format("{0}*.part*.rar", id), SearchOption.TopDirectoryOnly).FirstOrDefault();
+                    if (!Directory.Exists(path)) continue;
+                    filePath =
+                        Directory.GetFiles(path, string.Format("{0}*.part*.rar", id), SearchOption.TopDirectoryOnly)
+                            .FirstOrDefault();
                     if (filePath == null) continue;
                     uploadPath = path;
                     break;
@@ -306,15 +321,15 @@ namespace SharingWorker
                 }
 
                 string links1 = null, links2 = null;
-                switch (rnd.Next(0, 1000) % 2)
+                switch (rnd.Next(0, 1000)%2)
                 {
                     case 0:
-                        links1 = fileLinks1;
-                        links2 = fileLinks2;
+                        links1 = megaLinks;
+                        links2 = rgLinks;
                         break;
                     case 1:
-                        links1 = fileLinks2;
-                        links2 = fileLinks1;
+                        links1 = rgLinks;
+                        links2 = megaLinks;
                         break;
                 }
 
@@ -327,7 +342,7 @@ namespace SharingWorker
                     Id = id,
                     Links = content,
                 };
-                
+
                 if (Binbox.GetEnabled)
                 {
                     var binboxLinks = await Binbox.GetEncodedLink(id, content, Binbox.ApiUrlType.Main);
@@ -340,23 +355,33 @@ namespace SharingWorker
                         if (string.IsNullOrEmpty(linkbucksLinks)) linkbucksLinks = binboxLinks;
                     }
 
-                    File.AppendAllText(string.Format("Binbox_Backup_{0}.log", DateTime.Now.ToString("yyyy-MM")), string.Format("{0} | {1} | {2}", BackupBinboxLink, id, DateTime.Now.ToString("yyyy-MM-dd") + Environment.NewLine));
+                    File.AppendAllText(string.Format("Binbox_Backup_{0}.log", DateTime.Now.ToString("yyyy-MM")),
+                        string.Format("{0} | {1} | {2}", BackupBinboxLink, id,
+                            DateTime.Now.ToString("yyyy-MM-dd") + Environment.NewLine));
 
-                    await GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, linkbucksLinks, binboxLinks, linksBackup);
+                    await
+                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, linkbucksLinks,
+                            binboxLinks, linksBackup, isCensored);
                 }
                 else
                 {
                     content = content.Replace("\\n", Environment.NewLine);
-                    await GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, content, string.Empty, linksBackup);
+                    await
+                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, content, string.Empty,
+                            linksBackup, isCensored);
                 }
+
+                GenerateScanLover(rgLinks.Replace("\\n", Environment.NewLine));
+                GenerateWestern(rgLinks.Replace("\\n", Environment.NewLine), fileSize, fileFormat, imageCode);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 App.Logger.Error(ex.Message);
             }
         }
 
-        private async Task GenerateOutput(string title, string fileSize, string fileFormat, string imageCode, string imageCodeBlog, string linkbucksLinks, string binboxLinks, LinksBackup linksBackup)
+        private async Task GenerateOutput(string title, string fileSize, string fileFormat, string imageCode,
+            string imageCodeBlog, string linkbucksLinks, string binboxLinks, LinksBackup linksBackup , bool isCensored)
         {
             var videoInfoTw = await VideoInfo.QueryVideoInfo(title, QueryLang.TW);
             //var videoInfoEn = await VideoInfo.QueryVideoInfo(title, QueryLang.EN);
@@ -378,6 +403,7 @@ namespace SharingWorker
             else
                 Blogger.AddPost(new Blogger.BlogPost(blogTitle, imageCodeBlog, "", linksBackup));
 
+            var censored = isCensored ? "有碼" : "無碼";
             var wTitle = string.Format(" ({0})", title);
             if (title.Contains("1pon") || title.Contains("carib")) wTitle = string.Empty;
             var content = string.Format(@"{3}
@@ -401,34 +427,70 @@ namespace SharingWorker
 
 [color=green][b]【檔案大小】：[/b][/color]{1}
 
+[color=green][b]【影片時間】：[/b][/color]120 Min
+
 [color=green][b]【檔案格式】：[/b][/color]{2}
 
 [color=green][b]【下載空間】：[/b][/color]Mega & Rapidgator
 
-[color=green][b]【有／無碼】：[/b][/color]有/無碼
+[color=green][b]【有／無碼】：[/b][/color]{7}
 
 [color=green][b]【圖片預覽】：[/b][/color]
 {3}
 
 [color=green][b]【檔案載點】：[/b][/color]
-{4}
+[hide]{4}[/hide]
 
 ==
 
-", title, fileSize, fileFormat, imageCode, linkbucksLinks, videoInfoTw.Title, videoInfoTw.Actresses);
+", title, fileSize, fileFormat, imageCode, binboxLinks, videoInfoTw.Title, videoInfoTw.Actresses, censored);
 
-            File.AppendAllText(outputPath_l, content);
+            File.AppendAllText(outputPath_lh, content);
+            File.AppendAllText(outputPath_l, content.Replace("[hide]", string.Empty).Replace("[/hide]", string.Empty));
 
             content = string.Format("{0} ({1})", videoInfoTw.Title, title) + Environment.NewLine + Environment.NewLine +
-                "<div style='text-align: center;'>" +
-                                    imageCodeBlog +
-                                    "</div>" +
-                                    "Download (Mega.co.nz, Rapidgator) : <br /><!--more-->" +
-                                    "<a href=\"" + linkbucksLinks + "\">" + linkbucksLinks + "</a>"
-                                    + Environment.NewLine + Environment.NewLine +
-                                    "==" + Environment.NewLine + Environment.NewLine;
+                      "<div style='text-align: center;'>" +
+                      imageCodeBlog +
+                      "</div>" +
+                      "Download (Mega.co.nz, Rapidgator) : <br /><!--more-->" +
+                      "<a href=\"" + linkbucksLinks + "\">" + linkbucksLinks + "</a>"
+                      + Environment.NewLine + Environment.NewLine +
+                      "==" + Environment.NewLine + Environment.NewLine;
 
             File.AppendAllText(outputPath_blog, content);
+        }
+
+        private void GenerateScanLover(string rgLinks)
+        {
+            var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\scanlover.txt";
+            var content = string.Format(@"[color=green][b]Download：[/b][/color]
+{0}
+
+[b][color=#cc0000]nanamiyusa's Collection[/color] [/b]: [url=http://www.epc-jav.com]Erotic Public Cloud[/url]
+
+==
+
+", rgLinks);
+
+            File.AppendAllText(outputPath, content);
+        }
+
+        private void GenerateWestern(string rgLinks, string fileSize, string fileFormat, string imageCode)
+        {
+            var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\west.txt";
+            var content = string.Format(@"{0}
+
+Size: {1}
+Format: {2}
+
+[color=green][b]Download：[/b][/color]
+{3}
+
+==
+
+",imageCode, fileSize, fileFormat, rgLinks);
+
+            File.AppendAllText(outputPath, content);
         }
     }
 }
