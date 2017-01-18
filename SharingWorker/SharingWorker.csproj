@@ -72,10 +72,15 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
     <WarningLevel>1</WarningLevel>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
   <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.7.4137.9688, Culture=neutral, PublicKeyToken=a4292a325f69b123, processorArchitecture=MSIL">
+      <HintPath>..\packages\BouncyCastle.1.7.0\lib\Net40-Client\BouncyCastle.Crypto.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Caliburn.Micro, Version=2.0.2.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Caliburn.Micro.Core.2.0.2\lib\net45\Caliburn.Micro.dll</HintPath>
@@ -84,23 +89,29 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Caliburn.Micro.2.0.2\lib\net45\Caliburn.Micro.Platform.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Apis">
-      <HintPath>..\packages\Google.Apis.1.9.0\lib\net40\Google.Apis.dll</HintPath>
+    <Reference Include="Google.Apis, Version=1.13.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.13.0\lib\net45\Google.Apis.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Google.Apis.Auth">
-      <HintPath>..\packages\Google.Apis.Auth.1.9.1\lib\net40\Google.Apis.Auth.dll</HintPath>
+    <Reference Include="Google.Apis.Auth, Version=1.13.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.13.0\lib\net45\Google.Apis.Auth.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Google.Apis.Auth.PlatformServices">
-      <HintPath>..\packages\Google.Apis.Auth.1.9.1\lib\net40\Google.Apis.Auth.PlatformServices.dll</HintPath>
+    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.13.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.13.0\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Google.Apis.Blogger.v3">
-      <HintPath>..\packages\Google.Apis.Blogger.v3.1.9.0.480\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Blogger.v3.dll</HintPath>
+    <Reference Include="Google.Apis.Blogger.v3, Version=1.13.0.111, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Blogger.v3.1.13.0.111\lib\portable-net45+netcore45+wpa81+wp8\Google.Apis.Blogger.v3.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Google.Apis.Core">
-      <HintPath>..\packages\Google.Apis.Core.1.9.1\lib\portable-net40+sl50+win+wpa81+wp80\Google.Apis.Core.dll</HintPath>
+    <Reference Include="Google.Apis.Core, Version=1.13.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Core.1.13.0\lib\net45\Google.Apis.Core.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Google.Apis.PlatformServices">
-      <HintPath>..\packages\Google.Apis.1.9.0\lib\net40\Google.Apis.PlatformServices.dll</HintPath>
+    <Reference Include="Google.Apis.PlatformServices, Version=1.13.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.13.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Google.GData.Client">
       <HintPath>..\packages\Google.GData.Client.2.2.0.0\lib\Google.GData.Client.dll</HintPath>
@@ -131,9 +142,9 @@
     <Reference Include="Microsoft.Threading.Tasks.Extensions.Desktop">
       <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.Desktop.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="NLog, Version=3.2.1.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -163,6 +174,7 @@
     </Reference>
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -185,8 +197,9 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsFormsIntegration" />
-    <Reference Include="Zlib.Portable">
-      <HintPath>..\packages\Zlib.Portable.1.10.0\lib\portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid\Zlib.Portable.dll</HintPath>
+    <Reference Include="Zlib.Portable, Version=1.11.0.0, Culture=neutral, PublicKeyToken=431cba815f6a8b5b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zlib.Portable.Signed.1.11.0\lib\portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid\Zlib.Portable.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -196,25 +209,27 @@
     </ApplicationDefinition>
     <Compile Include="BindableListBox.cs" />
     <Compile Include="BindableListView.cs" />
-    <Compile Include="FileHost\LinkBucks.cs" />
+    <Compile Include="FileHost\Coinlink.cs" />
+    <Compile Include="FileHost\Elink.cs" />
+    <Compile Include="FileHost\Ouo.cs" />
+    <Compile Include="FileHost\PayUrl.cs" />
     <Compile Include="FileHost\Rapidgator.cs" />
+    <Compile Include="FileHost\ShinkIn.cs" />
+    <Compile Include="FileHost\ShorteSt.cs" />
+    <Compile Include="FileHost\Urle.cs" />
     <Compile Include="ImageHost\ImgDrive.cs" />
+    <Compile Include="ImageHost\ImageTwist.cs" />
     <Compile Include="ImageHost\ImgRock.cs" />
+    <Compile Include="ImageHost\PixSense.cs" />
     <Compile Include="MailHost\MailSource.cs" />
     <Compile Include="MailHost\Mailinator.cs" />
     <Compile Include="MailHost\TempMail.cs" />
-    <Compile Include="ImageHost\ImgMega.cs" />
-    <Compile Include="Post\Picasa.cs" />
     <Compile Include="Post\Blogger.cs" />
     <Compile Include="MahDialog.cs" />
     <Compile Include="MahWindowManager.cs" />
-    <Compile Include="Post\SharedFilesViewModel.cs" />
     <Compile Include="Video\VideoCover.cs" />
     <Compile Include="Video\VideoInfo.cs" />
     <Compile Include="Video\VideoUtil.cs" />
-    <Compile Include="FileHost\Binbox.xaml.cs">
-      <DependentUpon>Binbox.xaml</DependentUpon>
-    </Compile>
     <Compile Include="FileHost\MEGA.cs" />
     <Compile Include="FileHost\Uploadable.cs" />
     <Compile Include="ImageHost\IImageHost.cs" />
@@ -233,14 +248,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
     <Compile Include="UploadInfo.cs" />
-    <Page Include="FileHost\Binbox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Post\SharedFilesView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Video\RarListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -276,6 +283,9 @@
       <SubType>Designer</SubType>
     </Content>
     <None Include="client_secrets.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="client_secrets_links.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Logger\NLog.xsd">
@@ -316,7 +326,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /y "$(ProjectDir)Logger\NLog.config" "$(TargetDir)"

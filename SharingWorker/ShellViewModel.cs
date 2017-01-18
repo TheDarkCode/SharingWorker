@@ -39,21 +39,16 @@ namespace SharingWorker
             
             ImgChili = new ImgChili();
             LoadConfig(ImgChili);
-            ImgSpice = new ImgSpice();
-            LoadConfig(ImgSpice);
-            ImgMega = new ImgMega();
-            LoadConfig(ImgMega);
-            ImgDrive = new ImgDrive();
-            LoadConfig(ImgDrive);
             ImgRock = new ImgRock();
             LoadConfig(ImgRock);
-
+            PixSense = new PixSense();
+            LoadConfig(PixSense);
+            
             GetMega = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Mega"))["Enabled"]);
             GetUploadable = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Uploadable"))["Enabled"]);
             GetRapidgator = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Rapidgator"))["Enabled"]);
-            GetBinBox = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Binbox"))["Enabled"]);
-            GetLinkbucks = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Linkbucks"))["Enabled"]);
-
+            GetOuo = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Ouo"))["Enabled"]);
+            
             Blogger.PostProgressEvent += Blogger_PostProgressEvent;
             
             CompressToRar = true;
@@ -63,15 +58,13 @@ namespace SharingWorker
 
             CheckMega = true;
             CheckUploadable = true;
-            CheckBinbox = true;
-            SharedFiles = new SharedFilesViewModel();
 
             MailSource = Enum.GetValues(typeof(MailSource)).Cast<MailSource>().Random();
 
             this.windowManager = windowManager;
         }
 
-        public void SelectUploadImages()
+        public async void SelectUploadImages()
         {
             var dlg = new OpenFileDialog
             {
@@ -105,17 +98,22 @@ namespace SharingWorker
                         uploadInfo.UploadList.Add(uploadImage);
                 }
             }
+
+            //await PixSense.LogIn();
+            //if (PixSense.LoggedIn)
+            //{
+            //    var u = await PixSense.Upload(UploadResults.First().UploadList);
+            //    Console.WriteLine(u);
+            //}
         }
-        
+
         public async void StartLogin()
         {
             LoginFlag flag = 0;
             flag |= LoginFlag.Blogger;
             if (ImgChili.Enabled) flag |= LoginFlag.ImgChili;
-            if (ImgSpice.Enabled) flag |= LoginFlag.ImgSpice;
-            if (ImgMega.Enabled) flag |= LoginFlag.ImgMega;
-            if (ImgDrive.Enabled) flag |= LoginFlag.ImgDrive;
             if (ImgRock.Enabled) flag |= LoginFlag.ImgRock;
+            if (PixSense.Enabled) flag |= LoginFlag.PixSense;
             if (GetMega) flag |= LoginFlag.MEGA;
             if (GetRapidgator) flag |= LoginFlag.Rapidgator;
             if (GetUploadable) flag |= LoginFlag.Uploadable;
@@ -134,14 +132,10 @@ namespace SharingWorker
                 var loginTasks = new List<Task>();
                 if (!ImgChili.LoggedIn && flag.HasFlag(LoginFlag.ImgChili))
                     loginTasks.Add(ImgChili.LogIn());
-                if (!ImgMega.LoggedIn && flag.HasFlag(LoginFlag.ImgMega))
-                    loginTasks.Add(ImgMega.LogIn());
-                if (!ImgDrive.LoggedIn && flag.HasFlag(LoginFlag.ImgDrive))
-                    loginTasks.Add(ImgDrive.LogIn());
                 if (!ImgRock.LoggedIn && flag.HasFlag(LoginFlag.ImgRock))
                     loginTasks.Add(ImgRock.LogIn());
-                if (!ImgSpice.LoggedIn && flag.HasFlag(LoginFlag.ImgSpice))
-                    loginTasks.Add(ImgSpice.LogIn());
+                if (!PixSense.LoggedIn && flag.HasFlag(LoginFlag.PixSense))
+                    loginTasks.Add(PixSense.LogIn());
 
                 Task<bool> megaLoginTask = null;
                 if (!MegaLoggedIn && flag.HasFlag(LoginFlag.MEGA))
@@ -170,20 +164,17 @@ namespace SharingWorker
                     blogLoginTask = Blogger.LogIn();
                     loginTasks.Add(blogLoginTask);
                 }
-
-                //Task<bool> picasaLoginTask = Picasa.LogIn();
-                //loginTasks.Add(picasaLoginTask);
                 
                 await Task.WhenAll(loginTasks);
 
                 if (megaLoginTask != null)
-                    MegaLoggedIn = megaLoginTask.Result;
+                    MegaLoggedIn =await megaLoginTask;
                 if (rapidgatorLoginTask != null)
-                    RapidgatorLoggedIn = rapidgatorLoginTask.Result;
+                    RapidgatorLoggedIn = await rapidgatorLoginTask;
                 if (uploadableLoginTask != null)
-                    UploadableLoggedIn = uploadableLoginTask.Result;
+                    UploadableLoggedIn = await uploadableLoginTask;
                 if (blogLoginTask != null)
-                    BloggerLoggedIn = blogLoginTask.Result;
+                    BloggerLoggedIn = await blogLoginTask;
             }
             catch (Exception ex)
             {
@@ -195,10 +186,8 @@ namespace SharingWorker
 
             var ret = true;
             if (flag.HasFlag(LoginFlag.ImgChili)) ret &= ImgChili.LoggedIn;
-            if (flag.HasFlag(LoginFlag.ImgSpice)) ret &= ImgSpice.LoggedIn;
-            if (flag.HasFlag(LoginFlag.ImgMega)) ret &= ImgMega.LoggedIn;
-            if (flag.HasFlag(LoginFlag.ImgDrive)) ret &= ImgDrive.LoggedIn;
             if (flag.HasFlag(LoginFlag.ImgRock)) ret &= ImgRock.LoggedIn;
+            if (flag.HasFlag(LoginFlag.PixSense)) ret &= PixSense.LoggedIn;
             if (flag.HasFlag(LoginFlag.MEGA)) ret &= MegaLoggedIn;
             if (flag.HasFlag(LoginFlag.Rapidgator)) ret &= RapidgatorLoggedIn;
             if (flag.HasFlag(LoginFlag.Uploadable)) ret &= UploadableLoggedIn;
@@ -227,13 +216,8 @@ namespace SharingWorker
                 if (!string.IsNullOrEmpty(rapidgatorLinks))
                     rapidgatorLinks = rapidgatorLinks.TrimEnd(Environment.NewLine.ToCharArray()).Replace("\r\n", "\\n");
 
-                //var uploadableLinks = Uploadable.GetEnabled ? await Uploadable.GetLinks(uploadInfo.Id) : string.Empty;
-                //if (!string.IsNullOrEmpty(uploadableLinks))
-                //    uploadableLinks = uploadableLinks.TrimEnd(Environment.NewLine.ToCharArray()).Replace("\r\n", "\\n");
-
-                var megaCount = megaLinks.AllIndexesOf("mega.co.nz").Count();
+                var megaCount = megaLinks.AllIndexesOf("mega.nz").Count();
                 var rapidgatorCount = rapidgatorLinks.AllIndexesOf("rapidgator").Count();
-                //var uploadableCount = uploadableLinks.AllIndexesOf("uploadable").Count();
 
                 if (string.IsNullOrEmpty(megaLinks) && MEGA.GetEnabled)
                 {
@@ -245,29 +229,20 @@ namespace SharingWorker
                     uploadInfo.Id += "\n(No Rapidgator links!)";
                     continue;
                 }
-                //if (string.IsNullOrEmpty(uploadableLinks) && Uploadable.GetEnabled)
-                //{
-                //    uploadInfo.Id += "\n(No Uploadable links!)";
-                //    continue;
-                //}
                 if (MEGA.GetEnabled && Rapidgator.GetEnabled && megaCount != rapidgatorCount)
                 {
                     uploadInfo.Id += "\n(Missing some Mega/Rapidgator links!)";
                     continue;
                 }
-
+                
                 var uploadTasks = new List<Task<List<string>>>();
 
                 if (ImgChili.LoggedIn && ImgChili.Enabled)
                     uploadTasks.Add(ImgChili.Upload(uploadInfo.UploadList));
-                if (ImgSpice.LoggedIn && ImgSpice.Enabled)
-                    uploadTasks.Add(ImgSpice.Upload(uploadInfo.UploadList));
-                if (ImgMega.LoggedIn && ImgMega.Enabled)
-                    uploadTasks.Add(ImgMega.Upload(uploadInfo.UploadList));
-                if (ImgDrive.LoggedIn && ImgDrive.Enabled)
-                    uploadTasks.Add(ImgDrive.Upload(uploadInfo.UploadList));
                 if (ImgRock.LoggedIn && ImgRock.Enabled)
                     uploadTasks.Add(ImgRock.Upload(uploadInfo.UploadList));
+                if (PixSense.LoggedIn && PixSense.Enabled)
+                    uploadTasks.Add(PixSense.Upload(uploadInfo.UploadList));
 
                 var taskCount = uploadTasks.Count;
 
@@ -279,31 +254,31 @@ namespace SharingWorker
                         var finishedTask = await Task.WhenAny(uploadTasks);
                         uploadTasks.Remove(finishedTask);
 
-                        var links = await finishedTask;
+                        var links = await Task.Run(() => finishedTask);
                         if (links == null) continue;
 
                         if (links[0].Contains("imgchili"))
                         {
                             uploadInfo.WebLinks1 = links[0].Trim();
-                            uploadInfo.ForumLinks1 = links[1].Trim().ToLowerInvariant();
-                            uploadCount++;
-                        }
-                        else if (links[0].Contains("imgmega"))
-                        {
-                            uploadInfo.WebLinks2 = links[0].Trim();
-                            uploadInfo.ForumLinks2 = links[1].Trim().ToLowerInvariant();
+                            uploadInfo.ForumLinks1 = ToLowerForumCode(links[1].Trim());
                             uploadCount++;
                         }
                         else if (links[0].Contains("imgrock"))
                         {
-                            uploadInfo.WebLinks3 = links[0].Trim();
-                            uploadInfo.ForumLinks3 = links[1].Trim().ToLowerInvariant();
+                            uploadInfo.WebLinks2 = links[0].Trim();
+                            uploadInfo.ForumLinks2 = links[1].Trim();
                             uploadCount++;
                         }
-                        else if (links[0].Contains("imgdrive"))
+                        else if (links[0].Contains("pixsense"))
+                        {
+                            uploadInfo.WebLinks3 = links[0].Trim();
+                            uploadInfo.ForumLinks3 = links[1].Trim();
+                            uploadCount++;
+                        }
+                        else if (links[0].Contains("imgtrex"))
                         {
                             uploadInfo.WebLinks4 = links[0].Trim();
-                            uploadInfo.ForumLinks4 = links[1].Trim().ToLowerInvariant();
+                            uploadInfo.ForumLinks4 = ToLowerForumCode(links[1].Trim());
                             uploadCount++;
                         }
                     }
@@ -311,20 +286,15 @@ namespace SharingWorker
                     {
                         if (ex.Message.Contains(ImgChili.Name))
                             uploadInfo.WarningBrush1 = Brushes.Red;
-                        else if (ex.Message.Contains(ImgMega.Name))
-                            uploadInfo.WarningBrush2 = Brushes.Red;
                         else if (ex.Message.Contains(ImgRock.Name))
+                            uploadInfo.WarningBrush2 = Brushes.Red;
+                        else if (ex.Message.Contains(PixSense.Name))
                             uploadInfo.WarningBrush3 = Brushes.Red;
-                        else if (ex.Message.Contains(ImgDrive.Name))
-                            uploadInfo.WarningBrush4 = Brushes.Red;
 
                         uploadInfo.IdColor = Colors.Red;
                         Message = ex.InnerException.Message;
                     }
                 }
-
-                //var picasaBackup = await Picasa.Upload(uploadInfo.Id, uploadInfo.UploadList);
-                //checkPicasa |= picasaBackup;
 
                 try
                 {
@@ -338,7 +308,6 @@ namespace SharingWorker
                 }
 
                 // Delete or Move images
-                //if (uploadCount == taskCount && picasaBackup)
                 if (uploadCount == taskCount)
                 {
                     foreach (var image in uploadInfo.UploadList)
@@ -395,8 +364,15 @@ namespace SharingWorker
 
                 SpinWait.SpinUntil(() => false, rnd.Next(600, 1200));
             }
-            
+
+            UploadInfo.WriteSignature(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\west.txt");
+            IsUploadFinished = true;
             Message = "Upload done";
+        }
+
+        private string ToLowerForumCode(string code)
+        {
+            return code.Replace("[URL", "[url").Replace("URL]", "url]").Replace("IMG]", "img]");
         }
 
         public void SelectVideos()
@@ -466,43 +442,16 @@ namespace SharingWorker
                     await Task.WhenAll(videoTasks);
 
                     if (rarTask != null)
-                        file.RarStatus = rarTask.Result ? "OK" : "Error";
+                        file.RarStatus = await rarTask ? "OK" : "Error";
                     if (thumbnailTask != null)
-                        file.ThumbnailStatus = thumbnailTask.Result ? "OK" : "Error";
+                        file.ThumbnailStatus = await thumbnailTask ? "OK" : "Error";
                     if (coverTask != null)
-                        file.CoverStatus = coverTask.Result ? "OK" : "Error";
+                        file.CoverStatus = await coverTask ? "OK" : "Error";
                 }
                 catch (Exception ex)
                 {
                     Message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 }
-            }
-        }
-
-        public async void Restore(SharedFilesViewModel.RestoreSource source)
-        {
-            switch (source)
-            {
-                case SharedFilesViewModel.RestoreSource.BinboxBackup:
-                case SharedFilesViewModel.RestoreSource.LinksBackup:
-                    await Login(LoginFlag.Blogger | LoginFlag.ImgMega | LoginFlag.ImgChili | LoginFlag.ImgDrive | LoginFlag.ImgRock);
-                    break;
-                case SharedFilesViewModel.RestoreSource.BlogPost:
-                    await Login(LoginFlag.Blogger | LoginFlag.ImgMega | LoginFlag.ImgChili | LoginFlag.ImgDrive | LoginFlag.ImgRock);
-                    CheckBinbox = false;
-                    CheckMega = false;
-                    CheckUploadable = false;
-                    break;
-            }
-
-            SharedFiles.RestoreMode = source;
-
-            if (!SharedFiles.IsActive)
-            {
-                dynamic settings = new ExpandoObject();
-                settings.WindowStyle = WindowStyle.ToolWindow;
-                settings.ShowInTaskbar = true;
-                windowManager.ShowWindow(SharedFiles, null, settings);
             }
         }
 
@@ -523,11 +472,6 @@ namespace SharingWorker
                 Message = "Account created but failed to set!";
         }
 
-        public void CheckPosts()
-        {
-            SharedFiles.CheckItems();
-        }
-
         public void Closing()
         {
             IsUploadFinished = true;
@@ -541,21 +485,6 @@ namespace SharingWorker
         public void RemoveAll()
         {
             UploadResults.Clear();
-        }
-
-        public void OpenBinboxBackups()
-        {
-            foreach (var uploadInfo in SelectedUploadInfos)
-            {
-                try
-                {
-                    Process.Start("chrome.exe", uploadInfo.BackupBinboxLink);
-                }
-                catch (Exception ex)
-                {
-                    App.Logger.Error(ex);
-                }
-            }
         }
 
         private void LoadConfig(IImageHost imageHost)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -13,7 +14,7 @@ using SharingWorker.Video;
 
 namespace SharingWorker
 {
-    class UploadImage
+    public class UploadImage
     {
         public string Name { get; set; }
         public string Path { get; set; }
@@ -53,7 +54,6 @@ namespace SharingWorker
         public static readonly string[] UploadPaths = ConfigurationManager.AppSettings["UploadFolder"].Split(';');
 
         public List<UploadImage> UploadList { get; set; }
-        public string BackupBinboxLink;
 
         public UploadInfo(string id = null)
         {
@@ -239,11 +239,13 @@ namespace SharingWorker
             string imageCode = null;
             string imageCodeBlog = null;
             bool isCensored = true;
+            var megaBackup = megaLinks;
+            var rgBackup = rgLinks;
 
             var title = id;
-            if (char.IsDigit(id, 0) || id.Contains("heyzo") || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV")
+            if (((char.IsDigit(id, 0) && !id.StartsWith("00")) || id.Contains("heyzo") || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV")
                 || id.Contains("H0930") || id.Contains("h0930") || id.Contains("H4610") || id.Contains("h4610") || id.Contains("C0930") || id.Contains("c0930")
-                || id.Contains("heydouga") || id.Contains("av-sikou"))
+                || id.Contains("heydouga") || id.Contains("av-sikou")) && !id.Contains("200GANA") && !id.Contains("259LUXU") && !id.Contains("215LES") && !id.Contains("261ARA"))
             {
                 isCensored = false;
             }
@@ -262,39 +264,42 @@ namespace SharingWorker
                 if (dash > 0) title = title.Insert(dash, "-");
             }
 
-            switch (imageHostIndex%4)
+            var flinks = new Dictionary<int, string>
             {
-                case 0:
-                    imageCode = ForumLinks1;
-                    imageCodeBlog = WebLinks2;
-                    break;
-                case 1:
-                    imageCode = ForumLinks2;
-                    imageCodeBlog = WebLinks3;
-                    break;
-                case 2:
-                    imageCode = ForumLinks3;
-                    imageCodeBlog = WebLinks4;
-                    break;
-                case 3:
-                    imageCode = ForumLinks4;
-                    imageCodeBlog = WebLinks1;
-                    break;
-            }
+                { 0, ForumLinks1 },
+                { 1, ForumLinks2 },
+                { 2, ForumLinks3 },
+                //{ 3, ForumLinks4 },
+            };
+            var wlinks = new Dictionary<int, string>
+            {
+                { 0, WebLinks1 },
+                { 1, WebLinks2 },
+                { 2, WebLinks3 },
+                //{ 3, WebLinks4 },
+            };
 
-            if (string.IsNullOrEmpty(imageCode))
+            if (flinks.Count(p => !string.IsNullOrEmpty(p.Value)) == 1 || wlinks.Count(p => !string.IsNullOrEmpty(p.Value)) == 1)
             {
-                imageCode =
-                    new List<string> {ForumLinks4, ForumLinks2, ForumLinks3, ForumLinks1}.Where(
-                        links => !string.IsNullOrEmpty(links)).Random();
+                imageCode = flinks.First().Value;
+                imageCodeBlog = wlinks.First().Value;
             }
-            if (string.IsNullOrEmpty(imageCodeBlog))
+            else
             {
-                imageCodeBlog =
-                    new List<string> {WebLinks4, WebLinks2, WebLinks3, WebLinks1}.Where(
-                        links => !string.IsNullOrEmpty(links)).Random();
-            }
+                var fIndex = imageHostIndex % flinks.Count;
+                var wIndex = fIndex < flinks.Count - 1 ? fIndex + 1 : 0;
 
+                imageCode = flinks[fIndex];
+                imageCodeBlog = wlinks[wIndex];
+
+                if (string.IsNullOrEmpty(imageCode) || string.IsNullOrEmpty(imageCodeBlog))
+                {
+                    imageCode = flinks.Where(l => !string.IsNullOrEmpty(l.Value)).Select(l => l.Value).Random();
+                    var imgCodeIndex = flinks.FirstOrDefault(l => l.Value == imageCode).Key;
+                    imageCodeBlog = wlinks.Where(l => l.Key != imgCodeIndex && !string.IsNullOrEmpty(l.Value)).Select(l => l.Value).Random();
+                }
+            }
+            
             imageHostIndex++;
 
             try
@@ -320,6 +325,48 @@ namespace SharingWorker
                     fileSize = VideoUtil.GetFileSizeGB(uploadPath, id) + "GB";
                 }
 
+                //|| id.Contains("10mu") || id.Contains("1pon") || id.Contains("paco") || id.Contains("caribpr") || id.Contains("heydouga")
+                if ((isCensored || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV") || id.Contains("av-sikou")
+                    || id.Contains("H0930") || id.Contains("h0930") || id.Contains("H4610") || id.Contains("h4610") || id.Contains("C0930") || id.Contains("c0930")
+                    ) 
+                    && Ouo.GetEnabled && !string.IsNullOrEmpty(megaLinks))
+                {
+                    var allLinks = megaLinks.Split(new string[] { "\\n" }, StringSplitOptions.None);
+                    var firstLine = true;
+                    var sb = new StringBuilder();
+                    foreach (var link in allLinks)
+                    {
+                        if (firstLine)
+                        {
+                            var firstLink = await ShinkIn.GetLink(link);
+                            if (string.IsNullOrEmpty(firstLink) || firstLink.Length > 30)
+                                firstLink = link;
+                            
+                            sb.Append(string.Format("{0}\\n", firstLink));
+                            firstLine = false;
+                        }
+                        else
+                        {
+                            sb.Append(string.Format("{0}\\n", link));
+                        }
+                    }
+                    megaLinks = sb.ToString().TrimEnd("\\n".ToCharArray());
+                }
+                else if (!isCensored && Ouo.GetEnabled && !string.IsNullOrEmpty(megaLinks))
+                {
+                    var allLinks = megaLinks.Split(new string[] { "\\n" }, StringSplitOptions.None);
+                    var sb = new StringBuilder();
+                    foreach (var link in allLinks)
+                    {
+                        var ouoLink = await ShinkIn.GetLink(link);
+                        if (string.IsNullOrEmpty(ouoLink) || ouoLink.Length > 30)
+                            ouoLink = link;
+
+                        sb.Append(string.Format("{0}\\n", ouoLink));                       
+                    }
+                    megaLinks = sb.ToString().TrimEnd("\\n".ToCharArray());
+                }
+
                 string links1 = null, links2 = null;
                 switch (rnd.Next(0, 1000)%2)
                 {
@@ -336,43 +383,52 @@ namespace SharingWorker
                 var content = string.Empty;
                 content = string.Format("{0}\\nor\\n{1}", links1, links2);
                 content += "\\n\\nAll links are interchangeable and no password.";
+                content = content.Replace("\\n", "<br />");
+
+                var contentBackup = string.Format("{0}\\nor\\n{1}", megaBackup, rgBackup);
+                contentBackup += "\\n\\nAll links are interchangeable and no password.";
+                contentBackup = contentBackup.Replace("\\n", "<br />");
 
                 var linksBackup = new LinksBackup
                 {
                     Id = id,
-                    Links = content,
+                    Links = contentBackup,
                 };
 
-                if (Binbox.GetEnabled)
+                string cashLink = string.Empty;
+                var linksPage = Blogger.CreateLinksPost(content);
+                if (string.IsNullOrEmpty(linksPage))
                 {
-                    var binboxLinks = await Binbox.GetEncodedLink(id, content, Binbox.ApiUrlType.Main);
-                    BackupBinboxLink = await Binbox.GetEncodedLink(id, content, Binbox.ApiUrlType.Backup);
-
-                    var linkbucksLinks = string.Empty;
-                    if (LinkBucks.GetEnabled)
-                    {
-                        linkbucksLinks = await LinkBucks.GetLinkbucksSingle(id, binboxLinks);
-                        if (string.IsNullOrEmpty(linkbucksLinks)) linkbucksLinks = binboxLinks;
-                    }
-
-                    File.AppendAllText(string.Format("Binbox_Backup_{0}.log", DateTime.Now.ToString("yyyy-MM")),
-                        string.Format("{0} | {1} | {2}", BackupBinboxLink, id,
-                            DateTime.Now.ToString("yyyy-MM-dd") + Environment.NewLine));
-
                     await
-                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, linkbucksLinks,
-                            binboxLinks, linksBackup, isCensored);
+                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, content,
+                        linksBackup, isCensored, rgLinks);
                 }
                 else
                 {
-                    content = content.Replace("\\n", Environment.NewLine);
+                    cashLink = linksPage;
+                    if (Ouo.GetEnabled)
+                    {
+                        cashLink = await ShinkIn.GetLink(linksPage);
+                        if (string.IsNullOrEmpty(cashLink) || cashLink.Length > 30)
+                            cashLink = linksPage;
+                    }
+
                     await
-                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, content, string.Empty,
-                            linksBackup, isCensored);
+                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, cashLink,
+                            linksBackup, isCensored, rgLinks);
                 }
 
-                GenerateScanLover(rgLinks.Replace("\\n", Environment.NewLine));
-                GenerateWestern(rgLinks.Replace("\\n", Environment.NewLine), fileSize, fileFormat, imageCode);
+                var payurlLink = await Urle.GetLink(linksPage);
+                //var westLink = cashLink.Replace("shink.in", "shink.me");
+                var westLink = payurlLink;
+                if (!string.IsNullOrEmpty(payurlLink))
+                {
+                    GenerateJavLibrary(payurlLink, fileSize, fileFormat, imageCode);
+                }
+                if (!string.IsNullOrEmpty(westLink))
+                {
+                    GenerateWestern(westLink, fileSize, fileFormat, imageCode);
+                }
             }
             catch (Exception ex)
             {
@@ -380,46 +436,36 @@ namespace SharingWorker
             }
         }
 
-        private async Task GenerateOutput(string title, string fileSize, string fileFormat, string imageCode,
-            string imageCodeBlog, string linkbucksLinks, string binboxLinks, LinksBackup linksBackup , bool isCensored)
+        private void GenerateBlogPost(string title, string imageCodeBlog, string cashLinks, LinksBackup linksBackup, VideoInfo videoInfo, string rgLinks)
         {
-            var videoInfoTw = await VideoInfo.QueryVideoInfo(title, QueryLang.TW);
-            //var videoInfoEn = await VideoInfo.QueryVideoInfo(title, QueryLang.EN);
-
             var blogTitle = "";
-            if (videoInfoTw.Title.Contains("Tokyo Hot"))
+            if (videoInfo.Title.Contains("Tokyo Hot"))
             {
-                blogTitle = string.Format("{0}", videoInfoTw.Title.Replace("Tokyo Hot", "Tokyo-Hot"));
+                blogTitle = string.Format("{0}", videoInfo.Title.Replace("Tokyo Hot", "Tokyo-Hot"));
             }
             else
             {
-                blogTitle = string.Format("{0} ({1})", videoInfoTw.Title, title);
+                blogTitle = string.Format("[{1}] {0}", videoInfo.Title, title);
                 if (blogTitle.Count(c => c == '-') == 1 && !blogTitle.Contains('_'))
                     blogTitle = blogTitle.Replace("-", "");
             }
 
-            if (Binbox.GetEnabled)
-                Blogger.AddPost(new Blogger.BlogPost(blogTitle, imageCodeBlog, linkbucksLinks, linksBackup));
-            else
-                Blogger.AddPost(new Blogger.BlogPost(blogTitle, imageCodeBlog, "", linksBackup));
+            blogTitle = RemoveTitle(title, blogTitle);
+            Blogger.AddPost(new Blogger.BlogPost(blogTitle, imageCodeBlog, cashLinks, linksBackup, rgLinks));
+        }
+
+        private async Task GenerateOutput(string title, string fileSize, string fileFormat, string imageCode,
+            string imageCodeBlog, string cashLinks, LinksBackup linksBackup , bool isCensored, string rgLinks)
+        {
+            var videoInfoTw = await VideoInfo.QueryVideoInfo(title, QueryLang.TW);
+
+            GenerateBlogPost(title, imageCodeBlog, cashLinks, linksBackup, videoInfoTw, rgLinks);
 
             var censored = isCensored ? "有碼" : "無碼";
             var wTitle = string.Format(" ({0})", title);
             if (title.Contains("1pon") || title.Contains("carib")) wTitle = string.Empty;
-            var content = string.Format(@"{3}
 
-[color=green][b]Download (Mega.co.nz & Rapidgator)：[/b][/color]
-[url]{4}[/url]
-
-[b][color=#cc0000]nanamiyusa's Collection[/color] [/b]: [url=http://www.epc-jav.com]Erotic Public Cloud[/url]
-
-==
-
-", wTitle, fileSize, fileFormat, imageCode, binboxLinks);
-
-            File.AppendAllText(outputPath_w, content);
-
-            content = string.Format(@"{5} ({0}) [{1}/{2}][多空]
+            var content = string.Format(@"{5} ({0}) [{1}/{2}][多空]
 
 [color=green][b]【影片名稱】：[/b][/color]{5} ({0})
 
@@ -443,39 +489,38 @@ namespace SharingWorker
 
 ==
 
-", title, fileSize, fileFormat, imageCode, binboxLinks, videoInfoTw.Title, videoInfoTw.Actresses, censored);
+", title, fileSize, fileFormat, imageCode, cashLinks, videoInfoTw.Title, videoInfoTw.Actresses, censored);
+
+            content = RemoveTitle(title, content);
+            var blogLinks = Ouo.GetEnabled
+                ? string.Format("<a href=\"{0}\">{0}</a>", cashLinks) : cashLinks;
 
             File.AppendAllText(outputPath_lh, content);
             File.AppendAllText(outputPath_l, content.Replace("[hide]", string.Empty).Replace("[/hide]", string.Empty));
-
+            
             content = string.Format("{0} ({1})", videoInfoTw.Title, title) + Environment.NewLine + Environment.NewLine +
-                      "<div style='text-align: center;'>" +
-                      imageCodeBlog +
-                      "</div>" +
-                      "Download (Mega.co.nz, Rapidgator) : <br /><!--more-->" +
-                      "<a href=\"" + linkbucksLinks + "\">" + linkbucksLinks + "</a>"
-                      + Environment.NewLine + Environment.NewLine +
-                      "==" + Environment.NewLine + Environment.NewLine;
+                    "<div style='text-align: center;'>" +
+                    imageCodeBlog +
+                    "</div>" +
+                    "Download (Mega.nz, Rapidgator) : <br /><!--more-->" +
+                    blogLinks
+                    + Environment.NewLine + Environment.NewLine +
+                    "==" + Environment.NewLine + Environment.NewLine;
 
             File.AppendAllText(outputPath_blog, content);
         }
 
-        private void GenerateScanLover(string rgLinks)
+        private string RemoveTitle(string title, string content)
         {
-            var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\scanlover.txt";
-            var content = string.Format(@"[color=green][b]Download：[/b][/color]
-{0}
-
-[b][color=#cc0000]nanamiyusa's Collection[/color] [/b]: [url=http://www.epc-jav.com]Erotic Public Cloud[/url]
-
-==
-
-", rgLinks);
-
-            File.AppendAllText(outputPath, content);
+            if (title.Contains("heydouga") || title.Contains("TokyoHot") || title.Contains("zipang") ||
+                title.Contains("detail") || title.Contains("h0930") || title.Contains("h4610") || title.Contains("c0930"))
+            {
+                return content.Replace(string.Format(" ({0})", title), string.Empty);
+            }
+            return content;
         }
 
-        private void GenerateWestern(string rgLinks, string fileSize, string fileFormat, string imageCode)
+        private void GenerateWestern(string shortLink, string fileSize, string fileFormat, string imageCode)
         {
             var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\west.txt";
             var content = string.Format(@"{0}
@@ -483,14 +528,46 @@ namespace SharingWorker
 Size: {1}
 Format: {2}
 
-[color=green][b]Download：[/b][/color]
-{3}
+[color=green][b]Download (Mega.nz & Rapidgator)：[/b][/color]
+[url]{3}[/url]
 
 ==
 
-",imageCode, fileSize, fileFormat, rgLinks);
+", imageCode, fileSize, fileFormat, shortLink);
 
             File.AppendAllText(outputPath, content);
+        }
+
+        private void GenerateJavLibrary(string shortLink, string fileSize, string fileFormat, string imageCode)
+        {
+            var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\JavLib.txt";
+            var content = string.Format(@"{0}
+
+Size: {1}
+Format: {2}
+
+[color=green][b]Download (Mega.nz & Rapidgator)：[/b][/color]
+[url]{3}[/url]
+
+[b][color=#cc0000]nanamiyusa's Collection[/color] [/b]: [url=http://blog.epc-jav.com]Erotic Public Cloud[/url]
+
+==
+
+", imageCode, fileSize, fileFormat, shortLink);
+
+            File.AppendAllText(outputPath, content);
+        }
+
+        public static void WriteSignature(string filePath)
+        {
+            if (!File.Exists(filePath)) return;
+            var lines = File.ReadLines(filePath);
+            if (lines.Count() <= 3) return;
+            var content = lines.Take(lines.Count() - 2).ToList();
+
+            var signature = @"[b][color=#cc0000]nanamiyusa's Collection[/color] [/b]: [url=http://blog.epc-jav.com]Erotic Public Cloud[/url]";
+            content.Add(signature);
+            File.WriteAllLines(filePath, content);
         }
     }
 }

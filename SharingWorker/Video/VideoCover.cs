@@ -6,12 +6,16 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Windows;
 using Newtonsoft.Json;
+using NLog;
 
 namespace SharingWorker.Video
 {
     public static class VideoCover
     {
+        public static readonly NLog.Logger Logger = LogManager.GetCurrentClassLogger();
+
         public static async Task<bool> GetSnapshot(string sourcePath, string outputName)
         {
             var tempPath = Path.Combine(Path.GetDirectoryName(sourcePath), Path.GetFileNameWithoutExtension(sourcePath) + ".jpg");
@@ -71,7 +75,7 @@ namespace SharingWorker.Video
 
             for (int i = 0; i < coverUrls.Count; i++)
             {
-                if (!fileName.Contains("mesubuta") && !fileName.Contains("mura") && (fileName.Last() == 'A' || fileName.Last() == 'a'))
+                if (!fileName.Contains("mesubuta") && !fileName.Contains("mura") && !fileName.Contains("1000giri") && (fileName.Last() == 'A' || fileName.Last() == 'a'))
                     fileName = fileName.Substring(0, fileName.Length - 1);
 
                 if (!fileName.Contains("carib") && (fileName.Last() == 'B' || fileName.Last() == 'b'))
@@ -97,7 +101,7 @@ namespace SharingWorker.Video
             return ret;
         }
 
-        private static async Task<List<string>> GetCoverImageUrl(string fileName)
+        public static async Task<List<string>> GetCoverImageUrl(string fileName)
         {
             if (fileName.Contains("caribpr"))
             {
@@ -165,6 +169,21 @@ namespace SharingWorker.Video
             {
                 return new List<string> { string.Format("http://www.1000giri.net/gallery/{0}/images/swf_f.jpg", fileName.Replace("1000giri-", string.Empty)) };
             }
+            if (fileName.StartsWith("SIRO-"))
+            {
+                fileName = fileName.Replace("-", string.Empty).ToLower();
+                return new List<string> { string.Format("http://sirouto-douga.1000.tv/img/capture/{0}/{0}_b0.jpg", fileName) };
+            }
+            if (fileName.StartsWith("200GANA-"))
+            {
+                fileName = fileName.Replace("200GANA-", "gana");
+                return new List<string> { string.Format("http://sirouto-douga.1000.tv/img/capture/{0}/{0}_b0.jpg", fileName) };
+            }
+            if (fileName.StartsWith("259LUXU-"))
+            {
+                fileName = fileName.Replace("259LUXU-", "lux");
+                return new List<string> { string.Format("http://sirouto-douga.1000.tv/img/capture/{0}/{0}_b0.jpg", fileName) };
+            }
 
             return new List<string> { await QueryDmmImage(fileName) };
         }
@@ -217,20 +236,22 @@ namespace SharingWorker.Video
 
         private static async Task<string> Get1ponCover(string id)
         {
-            var idParts = id.Split('_');
-            if (idParts.Length > 1)
-            {
-                id = idParts[1];
-            }
-
-            var url = string.Format("http://www.1pondo.tv/dyn/ren/movie_details/{0}.json", id.Replace("-1pon", string.Empty));
+            var url = string.Format("http://www.1pondo.tv/dyn/ren/movie_details/movie_id/{0}.json", id.Replace("-1pon", string.Empty));
 
             using (var handler = new HttpClientHandler())
             using (var client = new HttpClient(handler))
             {
-                var response = await client.GetStringAsync(url);
-                dynamic js = JsonConvert.DeserializeObject(response);
-                return Convert.ToString(js.ThumbHigh);
+                try
+                {
+                    var response = await client.GetStringAsync(url);
+                    dynamic js = JsonConvert.DeserializeObject(response);
+                    return Convert.ToString(js.ThumbHigh);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException(ex.Message, ex);
+                    return string.Empty;
+                }
             }
         }
     }

@@ -12,12 +12,15 @@ using System.Xml.Linq;
 using Google.GData.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NLog;
 using SharingWorker.MailHost;
 
 namespace SharingWorker.FileHost
 {
     static class MEGA
     {
+        private static readonly NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
         private static readonly Random rnd = new Random();
         private static string user = ((NameValueCollection)ConfigurationManager.GetSection("Mega"))["User"];
         private static string password = ((NameValueCollection)ConfigurationManager.GetSection("Mega"))["Password"];
@@ -45,7 +48,7 @@ namespace SharingWorker.FileHost
             }
             catch (Exception ex)
             {
-                App.Logger.Error("Failed to set MEGA account!", ex);
+                logger.Error("Failed to set MEGA account!", ex);
                 return false;
             }
         }
@@ -56,7 +59,7 @@ namespace SharingWorker.FileHost
             {
                 FileName = @"megatools/megals.exe",
                 UseShellExecute = false, RedirectStandardOutput = true, CreateNoWindow = true,
-                Arguments = string.Format("-u {0} -p {1} -e /Root/", user, password)
+                Arguments = string.Format("-u {0} -p {1} -e -n /Root/", user, password)
             };
 
             return await Task.Run(() =>
@@ -65,22 +68,31 @@ namespace SharingWorker.FileHost
                 {
                     using (var reader = process.StandardOutput)
                     {
-                        var result = reader.ReadToEnd();
-                        if (string.IsNullOrEmpty(result) || !result.Contains("https://mega.co.nz/#"))
+                        try
                         {
-                            App.Logger.Warn(result);
-                            return false;
-                        }
-                        links = new List<string>(result.Split('\n'));
+                            var result = reader.ReadToEnd();
+                            if (string.IsNullOrEmpty(result) || !result.Contains("https://mega.nz/#"))
+                            {
+                                return false;
+                            }
 
-                        if (links.Count <= 0)
+                            links = new List<string>();
+                            foreach (var linkBegin in result.AllIndexesOf("https://mega.nz/"))
+                            {
+                                var linkEnd = result.IndexOf(Environment.NewLine, linkBegin, StringComparison.OrdinalIgnoreCase);
+                                if (linkEnd > 0)
+                                {
+                                    links.Add(result.Substring(linkBegin, linkEnd - linkBegin));
+                                }
+                            }
+                            
+                            return links.Any();
+                        }
+                        catch (Exception ex)
                         {
-                            App.Logger.Warn("No link found");
+                            logger.Error("Failed to login MEGA!", ex);
                             return false;
                         }
-                        
-                        links.RemoveAt(links.Count - 1);
-                        return true;
                     }
                 }
             });
@@ -92,11 +104,12 @@ namespace SharingWorker.FileHost
             return await Task.Run(() =>
             {
                 var searchLinks = links.Where(s => s.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
-
+                
                 string ret = null;
                 foreach (var link in searchLinks)
                 {
-                    ret += (link.Remove(link.IndexOf(" /Root"), link.Length - link.IndexOf(" /Root")) + Environment.NewLine);
+                    var end = link.IndexOf(" ", StringComparison.OrdinalIgnoreCase);
+                    ret += link.Remove(end) + Environment.NewLine;
                 }
                 return ret;
             });
@@ -114,7 +127,7 @@ namespace SharingWorker.FileHost
                     using (var client = new HttpClient(handler))
                     using (var response = await client.GetAsync(new Uri(string.Format("http://api.urlchecker.net/?response_format=json&link={0}", HttpUtility.UrlEncode(link)))))
                     {
-                        var jsonObj = JsonConvert.DeserializeObject<JObject>(response.Content.ReadAsStringAsync().Result);
+                        var jsonObj = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
                         var jsonLink = jsonObj.Property("link").Value.ToString();
                         var jsonResult = jsonObj.Property("result").Value.ToString();
                         var jsonStatus = jsonObj.Property("status").Value.ToString();
@@ -152,7 +165,7 @@ namespace SharingWorker.FileHost
                             using (var response = await client.PostAsync(new Uri(string.Format("http://www.luenephysio.de/check/check.php?rand={0}", rnd.NextDouble().ToString("F16"))), content))
                             {
 
-                                var result = response.Content.ReadAsStringAsync().Result;
+                                var result = await response.Content.ReadAsStringAsync();
                                 var status = "Unknown";
                                 if (result.Contains("error") || result.Contains("dead"))
                                 {
@@ -232,14 +245,14 @@ namespace SharingWorker.FileHost
             {
                 case MailSource.TempMail:
                     signupMail = await TempMail.GetMegaSignupMail(mailAddress).ConfigureAwait(false);
-                    start1 = signupMail.IndexOf("https://mega.co.nz/#confirm", 0, StringComparison.Ordinal);
+                    start1 = signupMail.IndexOf("https://mega.nz/#confirm", 0, StringComparison.Ordinal);
                     if (start1 < 0) return string.Empty;
                     end1 = signupMail.IndexOf(Environment.NewLine, start1, StringComparison.Ordinal);
                     validationUrl = signupMail.Substring(start1, end1 - start1);
                     break;
                 case MailSource.Mailinator:
                     signupMail = await Mailinator.GetMegaSignupMail(mailAddress).ConfigureAwait(false);
-                    start1 = signupMail.IndexOf("<a href=\"https://mega.co.nz/#confirm", 0, StringComparison.Ordinal);
+                    start1 = signupMail.IndexOf("<a href=\"https://mega.nz/#confirm", 0, StringComparison.Ordinal);
                     if (start1 < 0) return string.Empty;
                     start1 += 9;
                     end1 = signupMail.IndexOf("\"", start1, StringComparison.Ordinal);

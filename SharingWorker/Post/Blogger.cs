@@ -4,11 +4,13 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Configuration;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Blogger.v3;
 using Google.Apis.Services;
+using Google.Apis.Util.Store;
 using Newtonsoft.Json;
 
 namespace SharingWorker.Post
@@ -17,33 +19,39 @@ namespace SharingWorker.Post
     {
         public class BlogPost
         {
-            public BlogPost(string title, string content, string link, LinksBackup linksBackup)
+            public BlogPost(string title, string content, string link, LinksBackup linksBackup, string rgLinks = null)
             {
                 Title = title;
                 Content = content;
                 Link = link;
                 LinksBackup = linksBackup;
+                if (!string.IsNullOrEmpty(rgLinks))
+                    RgLinks = rgLinks.Replace("\\n", "<br />"); ;
             }
             public string Title;
             public string Content;
             public string Link;
+            public string RgLinks;
             public LinksBackup LinksBackup;
         }
-        
-        private static string apiKey = "{API-KEY}";
-        private static string blogUrl = "{BLOG-URL}";
 
+        //private static string apiKey = "{API-KEY}";
+        //private static string blogUrl = "{BLOG-URL}";
+        private static Regex rgx = new Regex(".+\\.blogspot\\.[^/]+\\/", RegexOptions.Compiled);
         public static readonly string BlogId = ((NameValueCollection)ConfigurationManager.GetSection("Blogger"))["BlogId"];
-        private static readonly string postUri = string.Format("https://www.blogger.com/feeds/{0}/posts/default", BlogId);
+        public static readonly string LinksBlogId = ((NameValueCollection)ConfigurationManager.GetSection("Blogger"))["LinksBlogId"];
+        //private static readonly string postUri = string.Format("https://www.blogger.com/feeds/{0}/posts/default", BlogId);
         private static readonly int postInterval = int.Parse(((NameValueCollection)ConfigurationManager.GetSection("Blogger"))["PostInterval"]) * 1000;
         private static readonly ConcurrentQueue<BlogPost> postQueue = new ConcurrentQueue<BlogPost>();
         private static readonly BackgroundWorker postWorker = new BackgroundWorker();
         private static int postCount;
 
-        private static string clientId = "308480037624-ac96560c6eggvm3bmg4hr2n6pnumhjqh.apps.googleusercontent.com";
-        private static string clientSecret = "p9V8HF4vjCSzsBJ5uflj720o";
+        //private static string clientId = "308480037624-ac96560c6eggvm3bmg4hr2n6pnumhjqh.apps.googleusercontent.com";
+        //private static string clientSecret = "p9V8HF4vjCSzsBJ5uflj720o";
         private static UserCredential credential;
         private static BloggerService service;
+        private static UserCredential linksCredential;
+        private static BloggerService linksService;
 
         public delegate void PostProgressEventHandler(object sender, ProgressChangedEventArgs e);
         public static event PostProgressEventHandler PostProgressEvent;
@@ -72,7 +80,7 @@ namespace SharingWorker.Post
             //    CancellationToken.None,
             //    new FileDataStore("Blogger.Auth.Store")     //用來儲存 Token 的目錄
             //);
-            
+
             using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
             {
                 credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
@@ -80,13 +88,25 @@ namespace SharingWorker.Post
                     "epcjav4@gmail.com", CancellationToken.None);
             }
 
-            if (credential == null) return false;
+            using (var stream = new FileStream("client_secrets_links.json", FileMode.Open, FileAccess.Read))
+            {
+                linksCredential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets, new[] { BloggerService.Scope.Blogger },
+                    "epcjav4@gmail.com", CancellationToken.None, new FileDataStore(@"Google.Apis.Auth\LinksBlog"));
+            }
+
+            if (credential == null || linksCredential == null) return false;
             service = new BloggerService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = credential,
                 ApplicationName = "blogtestproject", // 這個名稱必須與申請憑證時所使用的專案名稱相同
             });
-            return service != null;
+            linksService = new BloggerService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = linksCredential,
+                ApplicationName = "blogtestproject", // 這個名稱必須與申請憑證時所使用的專案名稱相同
+            });
+            return service != null && linksCredential != null;
         }
 
         public static void StartPosting()
@@ -132,7 +152,7 @@ namespace SharingWorker.Post
                     Content = "<div style='text-align: center;'>" +
                                 blogPost.Content +
                                 " </div>" +
-                                "Download (Mega.co.nz, Rapidgator) : <br /><hr class=\"more\"></hr>" +
+                                "Download (Mega.nz & Rapidgator): <br /><hr class=\"more\"></hr>" +
                                 "<a href=\"" + blogPost.Link + "\">" + blogPost.Link + "</a>",
                 };
 
@@ -162,23 +182,56 @@ namespace SharingWorker.Post
             }
         }
 
+        public static string CreateLinksPost(string content)
+        {
+            try
+            {
+                var md5 = content.ToMd5Hash();
+                var post = new Google.Apis.Blogger.v3.Data.Post
+                {
+                    Title = md5,
+                    Content = content,
+                };
+                
+                var request = new PostsResource.InsertRequest(linksService, post, LinksBlogId)
+                {
+                    IsDraft = false,
+                };
+                var result = request.Execute();
+                if (result == null)
+                {
+                    App.Logger.Error("Creating links post failed");
+                }
+                else
+                {
+                    var ret = rgx.Replace(result.Url, "http://links.epc-jav.com/");
+                    return ret;
+                }
+            }
+            catch (Exception ex)
+            {
+                App.Logger.Error(ex.Message);
+            }
+            return string.Empty;
+        }
+
         //public static async Task<IEnumerable<AtomEntry>> GetBlogPosts(DateTime startDate, DateTime endDate, int postNum = 0)
         //{
-            //return await Task.Run(() =>
-            //{
-            //    var query = new FeedQuery
-            //    {
-            //        Uri = new Uri(postUri),
-            //        MinPublication = startDate,
-            //        MaxPublication = endDate,
-            //    };
-                
-            //    if (postNum != 0)
-            //        query.NumberToRetrieve = postNum;
-                
-            //    var feed = service.Query(query);
-            //    return feed.Entries;
-            //});
+        //return await Task.Run(() =>
+        //{
+        //    var query = new FeedQuery
+        //    {
+        //        Uri = new Uri(postUri),
+        //        MinPublication = startDate,
+        //        MaxPublication = endDate,
+        //    };
+
+        //    if (postNum != 0)
+        //        query.NumberToRetrieve = postNum;
+
+        //    var feed = service.Query(query);
+        //    return feed.Entries;
+        //});
         //}
 
         //public static async Task<AtomEntry> GetBlogPost(string uri)
@@ -253,22 +306,6 @@ namespace SharingWorker.Post
             //            }
             //            else
             //                replace = false;
-            //        }
-            //    }
-            //}
-            //else
-            //{
-            //    foreach (var aliasUrl in LinkBucks.AliasUrls)
-            //    {
-            //        if (!post.Content.Content.Contains(aliasUrl)) continue;
-
-            //        var search = string.Format("http://www.{0}/", aliasUrl);
-            //        var diff = 0;
-            //        foreach (var start in post.Content.Content.AllIndexesOf(search))
-            //        {
-            //            var oldLinkbucks = post.Content.Content.Substring(start + diff, search.Length + 5);
-            //            diff = newLink.Length - oldLinkbucks.Length;
-            //            post.Content.Content = post.Content.Content.Replace(oldLinkbucks, newLink);
             //        }
             //    }
             //}

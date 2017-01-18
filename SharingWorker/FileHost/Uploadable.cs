@@ -36,7 +36,7 @@ namespace SharingWorker.FileHost
 
                 using (var response = await client.PostAsync("/login.php", content))
                 {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                    var result = await response.Content.ReadAsStringAsync();
                     if (result.Contains("logout"))
                         return true;
                 }
@@ -68,7 +68,7 @@ namespace SharingWorker.FileHost
                 using (var response = await client.PostAsync("/filesystem.php", content))
                 {
                     var links = new StringBuilder();
-                    var result = response.Content.ReadAsStringAsync().Result;
+                    var result = await response.Content.ReadAsStringAsync();
                     const string find = "<label name='download_link' style='display:none'>";
                     foreach (var first in result.AllIndexesOf(find))
                     {
@@ -105,7 +105,7 @@ namespace SharingWorker.FileHost
                     using (var response = await client.PostAsync("/check.php", content))
                     {
 
-                        var result = response.Content.ReadAsStringAsync().Result;
+                        var result = await response.Content.ReadAsStringAsync();
                         const string find = "http://www.uploadable.ch/file/";
                         foreach (var start in result.AllIndexesOf(find))
                         {

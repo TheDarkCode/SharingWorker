@@ -36,17 +36,16 @@
                 <MenuItem Header=" Select Upload Images" cal:Message.Attach="[Event Click] = [Action SelectUploadImages()]"/>
                 <Separator />
                 <MenuItem Header=" ImgChili" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgChili.Enabled}"/>
-                <MenuItem Header=" ImgMega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgMega.Enabled}"/>
-                <MenuItem Header=" ImgDrive" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgDrive.Enabled}"/>
                 <MenuItem Header=" ImgRock" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgRock.Enabled}"/>
-                <MenuItem Header=" ImgSpice" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgSpice.Enabled}"/>
+                <MenuItem Header=" PixSense" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding PixSense.Enabled}"/>
+                <MenuItem Header=" ImgTrex" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgTrex.Enabled}"/>
                 <Separator />
                 <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetMega}"/>
                 <MenuItem Header=" Uploadable" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetUploadable}"/>
                 <MenuItem Header=" Rapidgator" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetRapidgator}"/>
                 <Separator />
-                <MenuItem Header=" BinBox" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetBinBox}"/>
                 <MenuItem Header=" Linkbucks" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetLinkbucks}"/>
+                <MenuItem Header=" Ouo.io" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetOuo}"/>
             </MenuItem>
             <MenuItem Header="Video">
                 <MenuItem Header=" Select Videos" cal:Message.Attach="[Event Click] = [Action SelectVideos()]"/>
@@ -54,15 +53,6 @@
                 <MenuItem Header=" Compress to RAR" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding CompressToRar}"/>
                 <MenuItem Header=" Get Thumbnail" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetThumbnail}"/>
                 <MenuItem Header=" Get Cover" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetCover}"/>
-            </MenuItem>
-            <MenuItem Header="Post">
-                <MenuItem Header=" Restore from Binbox Backup" cal:Message.Attach="[Event Click] = [Action Restore('BinboxBackup')]"/>
-                <MenuItem Header=" Restore from Blog Post" cal:Message.Attach="[Event Click] = [Action Restore('BlogPost')]"/>
-                <MenuItem Header=" Restore from Link Backup" cal:Message.Attach="[Event Click] = [Action Restore('LinksBackup')]"/>
-                <Separator/>
-                <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding CheckMega}"/>
-                <MenuItem Header=" Uploadable" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding CheckUploadable}"/>
-                <MenuItem Header=" BinBox" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding CheckBinbox}"/>
             </MenuItem>
             <MenuItem Header="Tool">
                 <MenuItem Header=" Create MEGA account" cal:Message.Attach="[Event Click] = [Action CreateMegaAccount()]"/>
@@ -115,8 +105,6 @@
                 <ContextMenu>
                     <MenuItem Header="Remove" cal:Message.Attach="[Event Click] = [RemoveItem()]"/>
                     <MenuItem Header="Remove All" cal:Message.Attach="[Event Click] = [RemoveAll()]"/>
-                    <Separator/>
-                    <MenuItem Header="Open Binbox Backups" cal:Message.Attach="[Event Click] = [OpenBinboxBackups()]"/>
                 </ContextMenu>
             </ListBox.ContextMenu>
         </local:BindableListBox>
@@ -127,14 +115,14 @@
                 <Label Content="Login&#x0a; Status" VerticalAlignment="Center" />
                 <StackPanel Margin="5,0,0,0" VerticalAlignment="Center">
                     <CheckBox Content="ImgChili" IsChecked="{Binding ImgChili.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
-                    <CheckBox Content="ImgMega" IsChecked="{Binding ImgMega.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13" />
+                    <CheckBox Content="PixSense" IsChecked="{Binding PixSense.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13" />
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
-                    <CheckBox Content="ImgDrive" IsChecked="{Binding ImgDrive.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
+                    <CheckBox Content="ImgTrex" IsChecked="{Binding ImgTrex.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
                     <CheckBox Content="ImgRock" IsChecked="{Binding ImgRock.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
-                    <CheckBox Content="ImgSpice" IsChecked="{Binding ImgSpice.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
+
                     <CheckBox Content="Blogger" IsChecked="{Binding BloggerLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
@@ -150,6 +138,5 @@
                 <TextBlock x:Name="Message" TextWrapping="Wrap"/>
             </StatusBarItem>
         </StatusBar>
-        <b:Binbox x:Name="BinBoxWorker" Grid.Row="2" Visibility="Visible" Width="0" Height="0"/>
     </Grid>
 </mah:MetroWindow>

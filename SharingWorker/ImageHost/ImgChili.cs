@@ -15,6 +15,7 @@ namespace SharingWorker.ImageHost
 {
     class ImgChili : PropertyChangedBase, IImageHost
     {
+        private static Random rand = new Random();
         private static CookieContainer cookies;
 
         private bool enabled;
@@ -73,10 +74,23 @@ namespace SharingWorker.ImageHost
             LoggedIn = false;
             cookies = new CookieContainer();
 
-            using (var handler = new HttpClientHandler {CookieContainer = cookies})
+            using (var handler = new HttpClientHandler
+            {
+                CookieContainer = cookies,
+                AutomaticDecompression = DecompressionMethods.GZip
+            })
             using (var client = new HttpClient(handler))
             {
                 client.BaseAddress = new Uri(Url);
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0");
+                client.DefaultRequestHeaders.ExpectContinue = false;
+                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+                client.DefaultRequestHeaders.Referrer = new Uri("http://imgchili.net/");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xhtml+xml"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+
                 var content = new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("username", User),
@@ -85,7 +99,7 @@ namespace SharingWorker.ImageHost
 
                 using (var response = await client.PostAsync(LoginPath, content))
                 {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                    var result = await response.Content.ReadAsStringAsync();
                     if (result.Contains("http://imgchili.net/logout"))
                     {
                         LoggedIn = true;
@@ -102,16 +116,22 @@ namespace SharingWorker.ImageHost
                 using (var client = new HttpClient(handler))
                 {
                     client.DefaultRequestHeaders.ExpectContinue = false;
+                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0");
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xhtml+xml"));
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                     client.DefaultRequestHeaders.Referrer = new Uri(Url);
                     client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
                     client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-                    client.DefaultRequestHeaders.Add("DNT", "1");
                     client.DefaultRequestHeaders.Pragma.Add(new NameValueHeaderValue("no-cache"));
 
-                    using (var content = new MultipartFormDataContent(String.Format("---------------------------{0:14}", Guid.NewGuid().ToString().Replace("-", "").Substring(0, 14))))
+                    const string chars = "0123456789";
+                    var boundary = new string(
+                        Enumerable.Repeat(chars, 14)
+                            .Select(s => s[rand.Next(s.Length)])
+                            .ToArray());
+
+                    using (var content = new MultipartFormDataContent(string.Format("---------------------------{0}", boundary)))
                     {
                         foreach (var image in uploadImages)
                         {
@@ -127,6 +147,7 @@ namespace SharingWorker.ImageHost
                         content.Add(new ByteArrayContent(Encoding.Default.GetBytes("normal-boxed")), "upload_type");
                         content.Add(new ByteArrayContent(Encoding.Default.GetBytes("on")), "tos");
 
+                        App.Logger.Debug("ImgChili Start Upload...");
                         using (var message = await client.PostAsync("http://imgchili.net/upload.php", content))
                         {
                             var response = await message.Content.ReadAsStringAsync();
@@ -173,7 +194,7 @@ namespace SharingWorker.ImageHost
 
                 using (var response = await client.GetAsync(string.Format("http://imgchili.net/gallery/0/s/{0}", id)))
                 {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                    var result = await response.Content.ReadAsStringAsync();
                     const string search = "link3=\"";
                     foreach (var s in result.AllIndexesOf(search).Reverse())
                     {

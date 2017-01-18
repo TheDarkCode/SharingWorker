@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -54,7 +55,6 @@ namespace SharingWorker.Video
                 const string find = "-mesubuta";
                 return fileName.Substring(0, fileName.IndexOf(find) + find.Length);
             }
-
             if (fileName.EndsWith("_full"))
             {
                 var rmIdx = fileName.LastIndexOf("_full");
@@ -159,6 +159,18 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_1000giri(id, lang);
                 }
+                if (id.Contains("SIRO-"))
+                {
+                    return await GetVideoInfo_SIRO(id, lang);
+                }
+                if (id.Contains("200GANA-"))
+                {
+                    return await GetVideoInfo_200GANA(id, lang);
+                }
+                if (id.Contains("259LUXU-"))
+                {
+                    return await GetVideoInfo_259LUXU(id, lang);
+                }
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
                 {
                     return new VideoInfo {Title = "", Actresses = ""};
@@ -262,7 +274,16 @@ namespace SharingWorker.Video
                                 if (end >= 0)
                                 {
                                     ret.Actresses = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
-                                    ret.Title = string.Format("Tokyo Hot {0} {1} {2}", num, ret.Title, ret.Actresses);
+                                    ret.Title = ret.Title.Replace("--", "-");
+                                    if (ret.Title.Contains(ret.Actresses))
+                                    {
+                                        ret.Title = string.Format("Tokyo Hot {0} {1}", num, ret.Title);
+                                    }
+                                    else
+                                    {
+                                        ret.Title = string.Format("Tokyo Hot {0} {1} {2}", num, ret.Title, ret.Actresses);
+                                    }
+                                    
                                 }
                             }
                         }
@@ -308,6 +329,10 @@ namespace SharingWorker.Video
                                 if (end >= 0)
                                 {
                                     ret.Actresses = end - start <= 0 ? string.Empty : response.Substring(start, end - start);
+                                    if (!string.IsNullOrEmpty(ret.Actresses))
+                                    {
+                                        ret.Actresses = Regex.Replace(ret.Actresses, "【(.*)】", string.Empty);
+                                    }
 
                                     start = end + 1;
                                     var end1 = response.IndexOf(" - 無修正動画 HEYZO</title>", start, StringComparison.Ordinal);
@@ -336,21 +361,15 @@ namespace SharingWorker.Video
             return ret;
         }
 
-        private static async Task<VideoInfo> GetVideoInfo_1pon(string id, QueryLang lang)
+        public static async Task<VideoInfo> GetVideoInfo_1pon(string id, QueryLang lang)
         {
             var url = string.Empty;
             var ret = new VideoInfo { Title = "", Actresses = "" };
 
-            var idParts = id.Split('_');
-            if (idParts.Length > 1)
-            {
-                id = idParts[1];
-            }
-
             switch (lang)
             {
                 case QueryLang.TW:
-                    url = string.Format("http://www.1pondo.tv/dyn/ren/movie_details/{0}.json", id.Replace("-1pon", string.Empty));
+                    url = string.Format("http://www.1pondo.tv/dyn/ren/movie_details/movie_id/{0}.json", id.Replace("-1pon", string.Empty));
                     break;
                 case QueryLang.EN:
                     url = string.Format("http://en.1pondo.tv/eng/moviepages/{0}/index.htm", id.Replace("-1pon", string.Empty));
@@ -366,13 +385,13 @@ namespace SharingWorker.Video
                 {
                     case QueryLang.TW:
                         dynamic js = JsonConvert.DeserializeObject(response);
-                        var title = Convert.ToString(js.Title);
+                        string title = Convert.ToString(js.Title);
                         var actresses = Convert.ToString(js.Actor);
                         if (!string.IsNullOrEmpty(actresses))
                             actresses = actresses.Replace(",", " ");
 
                         ret.Actresses = actresses;
-                        ret.Title = string.Format("{0} {1}", title, actresses);
+                        ret.Title = title.Contains(actresses) ? title : string.Format("{0} {1}", title, actresses);
                         break;
                     case QueryLang.EN:
                         //if (start >= 0)
@@ -433,7 +452,7 @@ namespace SharingWorker.Video
                                     if (end >= 0)
                                     {
                                         var all = end - start <= 0 ? string.Empty : response.Substring(start, end - start);
-                                        ret.Actresses = all.Replace(ret.Title, string.Empty).TrimEnd(' ');
+                                        ret.Actresses = all.Replace(ret.Title, string.Empty).TrimStart(' ').RemoveEnd(" -");
                                         if(!string.IsNullOrEmpty(ret.Actresses))
                                             ret.Title += string.Format(" {0}", ret.Actresses);
                                     }
@@ -1001,10 +1020,14 @@ namespace SharingWorker.Video
                         if (start >= 0)
                         {
                             start = start + search.Length;
-                            var end = responseString.IndexOf(" - HEY動画", start, StringComparison.Ordinal);
+                            var end = responseString.IndexOf("</title>", start, StringComparison.Ordinal);
                             if (end >= 0)
                             {
                                 var title = responseString.Substring(start, end - start);
+                                var removeIdx = title.LastIndexOf(" -", StringComparison.OrdinalIgnoreCase);
+                                if (removeIdx > 0)
+                                    title = title.Substring(0, removeIdx);
+                                
                                 title = title.Replace("&#45;", "-");
                                 ret.Title = string.Format("Heydouga {0} {1}", num, title);
 
@@ -1049,6 +1072,147 @@ namespace SharingWorker.Video
                             {
                                 var title = responseString.Substring(start, end - start);
                                 ret.Title = title.Replace(" 無修正 画像 動画 |", string.Empty);
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_SIRO(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("SIRO-", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://sirouto-douga.1000.tv/siro{0}.php", num);
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var responseString = await client.GetStringAsync(url);
+
+                        var bytes = Encoding.UTF8.GetBytes("タイトル：");
+                        var search = Encoding.UTF8.GetString(bytes);
+
+                        var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf("</li>", start, StringComparison.OrdinalIgnoreCase);
+                            if (end >= 0)
+                            {
+                                var title = responseString.Substring(start, end - start);
+
+                                bytes = Encoding.UTF8.GetBytes("出演者：");
+                                search = Encoding.UTF8.GetString(bytes);
+                                start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                                if (start >= 0)
+                                {
+                                    start = start + search.Length;
+                                    end = responseString.IndexOf("</li>", start, StringComparison.Ordinal);
+                                    ret.Actresses = responseString.Substring(start, end - start);
+                                    ret.Title = string.Format("SIRO-{0} {1} {2}", num, title, ret.Actresses);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_200GANA(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("200GANA-", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://sirouto-douga.1000.tv/gana{0}.php", num);
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var responseString = await client.GetStringAsync(url);
+
+                        var bytes = Encoding.UTF8.GetBytes("タイトル：");
+                        var search = Encoding.UTF8.GetString(bytes);
+
+                        var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf("</li>", start, StringComparison.OrdinalIgnoreCase);
+                            if (end >= 0)
+                            {
+                                var title = responseString.Substring(start, end - start);
+
+                                bytes = Encoding.UTF8.GetBytes("出演者：");
+                                search = Encoding.UTF8.GetString(bytes);
+                                start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                                if (start >= 0)
+                                {
+                                    start = start + search.Length;
+                                    end = responseString.IndexOf("</li>", start, StringComparison.Ordinal);
+                                    ret.Actresses = responseString.Substring(start, end - start);
+                                    ret.Title = string.Format("200GANA-{0} {1} {2}", num, title, ret.Actresses);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_259LUXU(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("259LUXU-", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://sirouto-douga.1000.tv/lux{0}.php", num);
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var responseString = await client.GetStringAsync(url);
+
+                        var bytes = Encoding.UTF8.GetBytes("タイトル：");
+                        var search = Encoding.UTF8.GetString(bytes);
+
+                        var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf("</li>", start, StringComparison.OrdinalIgnoreCase);
+                            if (end >= 0)
+                            {
+                                var title = responseString.Substring(start, end - start);
+
+                                bytes = Encoding.UTF8.GetBytes("出演者：");
+                                search = Encoding.UTF8.GetString(bytes);
+                                start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                                if (start >= 0)
+                                {
+                                    start = start + search.Length;
+                                    end = responseString.IndexOf("</li>", start, StringComparison.Ordinal);
+                                    ret.Actresses = responseString.Substring(start, end - start);
+                                    ret.Title = string.Format("259LUXU-{0} {1} {2}", num, title, ret.Actresses);
+                                }
                             }
                         }
                     }

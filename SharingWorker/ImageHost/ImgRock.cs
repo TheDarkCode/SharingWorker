@@ -18,7 +18,7 @@ namespace SharingWorker.ImageHost
     {
         private static CookieContainer cookies;
         private string sess_id;
-        private static string token;
+        //private static string token;
         private static string uploadServer;
 
         private bool enabled;
@@ -100,7 +100,7 @@ namespace SharingWorker.ImageHost
 
                 using (var response = await client.PostAsync("http://imgrock.net/", content))
                 {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                    var result = await response.Content.ReadAsStringAsync();
                     if (result.IndexOf("logout", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         LoggedIn = true;
@@ -121,21 +121,21 @@ namespace SharingWorker.ImageHost
                     }
                 }
 
-                token = null;
-                using (var response = await client.GetAsync("http://imgrock.net/?op=my_files"))
-                {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                //token = null;
+                //using (var response = await client.GetAsync("http://imgrock.net/?op=my_files"))
+                //{
+                //    var result = await response.Content.ReadAsStringAsync();
 
-                    const string find = "token=";
-                    var start = result.IndexOf(find, StringComparison.OrdinalIgnoreCase);
-                    if (start >= 0)
-                    {
-                        start += find.Length;
-                        var end = result.IndexOf("\"", start, StringComparison.OrdinalIgnoreCase);
-                        if (end > start)
-                            token = result.Substring(start, end - start);
-                    }
-                }
+                //    const string find = "token=";
+                //    var start = result.IndexOf(find, StringComparison.OrdinalIgnoreCase);
+                //    if (start >= 0)
+                //    {
+                //        start += find.Length;
+                //        var end = result.IndexOf("\"", start, StringComparison.OrdinalIgnoreCase);
+                //        if (end > start)
+                //            token = result.Substring(start, end - start);
+                //    }
+                //}
             }
         }
 
@@ -227,75 +227,5 @@ namespace SharingWorker.ImageHost
             }
             return links;
         }
-
-        //public static async Task<string> GetImagesCode(string id)
-        //{
-        //    if (string.IsNullOrEmpty(token)) return string.Empty;
-        //    var ret = string.Empty;
-
-        //    using (var handler = new HttpClientHandler { CookieContainer = cookies })
-        //    using (var client = new HttpClient(handler))
-        //    {
-        //        client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
-        //        client.DefaultRequestHeaders.ExpectContinue = false;
-        //        client.DefaultRequestHeaders.Referrer = new Uri("http://imgrock.net/?op=my_files");
-        //        client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
-
-        //        var content = new FormUrlEncodedContent(new[]
-        //        {
-        //            new KeyValuePair<string, string>("op", "my_files"),
-        //            new KeyValuePair<string, string>("token", token),
-        //            new KeyValuePair<string, string>("fld_id", "0"),
-        //            new KeyValuePair<string, string>("key", id),
-        //            new KeyValuePair<string, string>("create_new_folder", ""),
-        //            new KeyValuePair<string, string>("to_folder", ""),
-        //        });
-
-        //        var fileIds = new List<string>();
-        //        using (var response = await client.PostAsync("http://imgrock.net/", content))
-        //        {
-        //            var result = response.Content.ReadAsStringAsync().Result;
-
-        //            const string find = "file_id\" value=\"";
-        //            foreach (var findStart in result.AllIndexesOf(find))
-        //            {
-        //                var start = findStart + find.Length;
-        //                var end = result.IndexOf("\"", start);
-        //                var fileId = result.Substring(start, end - start);
-
-        //                fileIds.Add(fileId);
-        //            }
-        //        }
-
-        //        if (!fileIds.Any()) return string.Empty;
-
-        //        content.Dispose();
-        //        var urlParam = new List<KeyValuePair<string, string>>();
-        //        urlParam.Add(new KeyValuePair<string, string>("op", "my_files_export"));
-        //        foreach (var fileId in fileIds)
-        //        {
-        //            urlParam.Add(new KeyValuePair<string, string>("file_id", fileId));
-        //        }
-        //        content = new FormUrlEncodedContent(urlParam);
-
-        //        using (var response = await client.PostAsync("http://imgrock.net/", content))
-        //        {
-        //            var result = response.Content.ReadAsStringAsync().Result;
-
-        //            var start = result.IndexOf("HTML code");
-        //            if (start >= 0)
-        //            {
-        //                start = result.IndexOf("<a href=", start);
-        //                var end = result.IndexOf("</textarea>", start);
-        //                if (end >= 0)
-        //                {
-        //                    ret = result.Substring(start, end - start).Replace("</a>\"", "</a><br/>");
-        //                }
-        //            }
-
-        //            return ret;
-        //        }
-        //    }
-        //}
     }
 }

@@ -8,17 +8,16 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using Caliburn.Micro;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace SharingWorker.ImageHost
 {
-    class ImgMega : PropertyChangedBase, IImageHost
+    class ImageTwist : PropertyChangedBase, IImageHost
     {
         private static CookieContainer cookies;
         private string sess_id;
-        private static string token;
+        private static string uploadServer;
 
         private bool enabled;
         public bool Enabled
@@ -46,14 +45,14 @@ namespace SharingWorker.ImageHost
         public string User { get; set; }
         public string Password { get; set; }
 
-        public ImgMega()
+        public ImageTwist()
         {
-            Name = "ImgMega";
+            Name = "ImageTwist";
         }
 
         public bool LoadConfig()
         {
-            var config = ConfigurationManager.GetSection("ImgMega") as NameValueCollection;
+            var config = ConfigurationManager.GetSection("ImageTwist") as NameValueCollection;
             if (config == null) return false;
 
             try
@@ -87,42 +86,45 @@ namespace SharingWorker.ImageHost
                 client.BaseAddress = new Uri(Url);
                 client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
                 client.DefaultRequestHeaders.ExpectContinue = false;
-                client.DefaultRequestHeaders.Referrer = new Uri("http://imgmega.com/login.html");
+                client.DefaultRequestHeaders.Referrer = new Uri("http://imagetwist.com/login.html");
 
                 var content = new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("op", "login"),
-                    new KeyValuePair<string, string>("redirect", "http://www.imgmega.com/"),
+                    new KeyValuePair<string, string>("redirect", "http://imagetwist.com/"),
                     new KeyValuePair<string, string>("login", User),
-                    new KeyValuePair<string, string>("password", Password)
+                    new KeyValuePair<string, string>("password", Password),
+                    new KeyValuePair<string, string>("submit_btn", "Login"),
                 });
 
-                using (var response = await client.PostAsync("http://imgmega.com/login.html", content))
+                using (var response = await client.PostAsync("http://imagetwist.com/", content))
                 {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                    var result = await response.Content.ReadAsStringAsync();
                     if (result.IndexOf("logout", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        LoggedIn = true;
-
                         var responseCookies = cookies.GetCookies(client.BaseAddress);
                         var sess_idCookie = responseCookies["xfss"];
                         if (sess_idCookie != null) sess_id = sess_idCookie.Value;
-                    }
-                }
 
-                token = null;
-                using (var response = await client.GetAsync("http://imgmega.com/?op=my_files"))
-                {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                        const string find = "srv_tmp_url='http://";
+                        var start = result.IndexOf(find, StringComparison.OrdinalIgnoreCase);
+                        if (start >= 0)
+                        {
+                            start += find.Length;
+                            var end = result.IndexOf("/tmp'", start, StringComparison.OrdinalIgnoreCase);
+                            if (end > start)
+                                uploadServer = result.Substring(start, end - start);
+                        }
 
-                    const string find = "token=";
-                    var start = result.IndexOf(find, StringComparison.OrdinalIgnoreCase);
-                    if (start >= 0)
-                    {
-                        start += find.Length;
-                        var end = result.IndexOf("\"", start, StringComparison.OrdinalIgnoreCase);
-                        if (end > start)
-                            token = result.Substring(start, end - start);
+                        if (string.IsNullOrEmpty(uploadServer))
+                        {
+                            MessageBox.Show(Application.Current.MainWindow, "uploadServer error!");
+                            LoggedIn = false;
+                        }
+                        else
+                        {
+                            LoggedIn = true;
+                        }
                     }
                 }
             }
@@ -137,7 +139,7 @@ namespace SharingWorker.ImageHost
                     CookieContainer = cookies,
                     //Proxy = new WebProxy("proxy.hinet.net:80"),
                     //UseProxy = true,
-                    //AutomaticDecompression = DecompressionMethods.GZip,
+                    AutomaticDecompression = DecompressionMethods.GZip,
                 })
                 using (var client = new HttpClient(handler))
                 {
@@ -148,14 +150,15 @@ namespace SharingWorker.ImageHost
                     foreach (var image in uploadImages)
                     {
                         client.DefaultRequestHeaders.ExpectContinue = false;
-                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/*"));
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                         client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
-                        client.DefaultRequestHeaders.Add("User-Agent", "Shockwave Flash");
-                        client.DefaultRequestHeaders.Add("Pragma", "no-cache");
-                        //client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-                        //client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-                        
-                        const string chars = "abcdefghijklmnopqrstuvwxyz";
+                        client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
+                        client.DefaultRequestHeaders.Add("Origin", "http://imagetwist.com");
+                        client.DefaultRequestHeaders.Add("X-Requested-With", "ShockwaveFlash/22.0.0.209");
+                        client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+                        client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+
+                        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
                         var random = new Random();
                         var boundary = new string(
                             Enumerable.Repeat(chars, 30)
@@ -166,17 +169,20 @@ namespace SharingWorker.ImageHost
                         {
                             content.Add(new ByteArrayContent(Encoding.Default.GetBytes(image.Name)), "\"Filename\"");
                             content.Add(new ByteArrayContent(Encoding.Default.GetBytes(sess_id)), "\"sess_id\"");
+                            content.Add(new ByteArrayContent(Encoding.Default.GetBytes("*.jpg;*.jpeg;*.gif;*.png;*.bmp")), "\"fileext\"");
                             content.Add(new ByteArrayContent(Encoding.Default.GetBytes("300x300")), "\"thumb_size\"");
-                            content.Add(new ByteArrayContent(Encoding.Default.GetBytes("1")), "\"file_adult\"");
-
+                            content.Add(new ByteArrayContent(Encoding.Default.GetBytes("/")), "\"folder\"");
+                            
                             var imageContent = new ByteArrayContent(image.Data);
                             imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
                             content.Add(imageContent, "\"Filedata\"");
                             imageContent.Headers.ContentDisposition.FileName = image.Name;
-                            
+
                             content.Add(new ByteArrayContent(Encoding.Default.GetBytes("Submit Query")), "\"Upload\"");
 
-                            using (var message = await client.PostAsync("http://imgmega.com/cgi-bin/upload_flash.cgi", content))
+                            App.Logger.Debug("ImgRock Start Upload...");
+
+                            using (var message = await client.PostAsync(string.Format("http://{0}/cgi-bin/up1.cgi", uploadServer), content))
                             {
                                 var response = await message.Content.ReadAsStringAsync();
 
@@ -200,90 +206,20 @@ namespace SharingWorker.ImageHost
         private string[] ParseResponse(string response)
         {
             var links = new string[2];
-            var json = JsonConvert.DeserializeObject(response.TrimStart('(').TrimEnd(')')) as JObject;
-            if (json != null)
+            var vars = response.Split(':');
+            if (vars.Length >= 4)
             {
-                var url = "";
-                var thumb = "";
-                if(json.Property("link_url") != null)
-                    url = json.Property("link_url").Value.ToString();
-                if (json.Property("thumb_url") != null)
-                    thumb = json.Property("thumb_url").Value.ToString();
+                var id = vars[0];
+                var num = vars[2];
+                var filename = vars[3];
 
+                var url = string.Format("http://imagetwist.com/{0}/{1}", id, filename);
+                var thumb = string.Format("http://{0}/th/{1}/{2}.jpg", uploadServer, num, id);
+                
                 links[0] = string.Format("<a href=\"{0}\" target=\"_blank\"><img src=\"{1}\" border=\"0\"></img></a><br />", url, thumb);
                 links[1] = string.Format("[url={0}][img]{1}[/img][/url]", url, thumb);
             }
             return links;
-        }
-
-        public static async Task<string> GetImagesCode(string id)
-        {
-            if (string.IsNullOrEmpty(token)) return string.Empty;
-            var ret = string.Empty;
-
-            using (var handler = new HttpClientHandler { CookieContainer = cookies })
-            using (var client = new HttpClient(handler))
-            {
-                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
-                client.DefaultRequestHeaders.ExpectContinue = false;
-                client.DefaultRequestHeaders.Referrer = new Uri("http://imgmega.com/?op=my_files");
-                client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
-
-                var content = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("op", "my_files"),
-                    new KeyValuePair<string, string>("token", token),
-                    new KeyValuePair<string, string>("fld_id", "0"),
-                    new KeyValuePair<string, string>("key", id),
-                    new KeyValuePair<string, string>("create_new_folder", ""),
-                    new KeyValuePair<string, string>("to_folder", ""),
-                });
-
-                var fileIds = new List<string>();
-                using (var response = await client.PostAsync("http://imgmega.com/", content))
-                {
-                    var result = response.Content.ReadAsStringAsync().Result;
-
-                    const string find = "file_id\" value=\"";
-                    foreach (var findStart in result.AllIndexesOf(find))
-                    {
-                        var start = findStart + find.Length;
-                        var end = result.IndexOf("\"", start);
-                        var fileId = result.Substring(start, end - start);
-
-                        fileIds.Add(fileId);
-                    }
-                }
-
-                if (!fileIds.Any()) return string.Empty;
-
-                content.Dispose();
-                var urlParam = new List<KeyValuePair<string, string>>();
-                urlParam.Add(new KeyValuePair<string, string>("op", "my_files_export"));
-                foreach (var fileId in fileIds)
-                {
-                    urlParam.Add(new KeyValuePair<string, string>("file_id", fileId));
-                }
-                content = new FormUrlEncodedContent(urlParam);
-
-                using (var response = await client.PostAsync("http://imgmega.com/", content))
-                {
-                    var result = response.Content.ReadAsStringAsync().Result;
-
-                    var start = result.IndexOf("HTML code");
-                    if (start >= 0)
-                    {
-                        start = result.IndexOf("<a href=", start);
-                        var end = result.IndexOf("</textarea>", start);
-                        if (end >= 0)
-                        {
-                            ret = result.Substring(start, end - start).Replace("</a>\"", "</a><br/>");
-                        }
-                    }
-
-                    return ret;
-                }
-            }
         }
     }
 }

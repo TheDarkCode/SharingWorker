@@ -91,7 +91,7 @@ namespace SharingWorker.ImageHost
 
                 using (var response = await client.PostAsync(LoginPath, content))
                 {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                    var result = await response.Content.ReadAsStringAsync();
                     if (result.IndexOf("logout", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         LoggedIn = true;
@@ -232,7 +232,7 @@ namespace SharingWorker.ImageHost
 
                 using (var response = await client.PostAsync("/", content))
                 {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                    var result = await response.Content.ReadAsStringAsync();
                     const string search = "file_id\" value=\"";
                     foreach (var s in result.AllIndexesOf(search))
                     {
@@ -262,7 +262,7 @@ namespace SharingWorker.ImageHost
 
                 using (var response = await client.PostAsync("/", content))
                 {
-                    var result = response.Content.ReadAsStringAsync().Result;
+                    var result = await response.Content.ReadAsStringAsync();
 
                     var start = result.IndexOf("All Images : HTML Codes for Sites", 0);
                     if (start >= 0)

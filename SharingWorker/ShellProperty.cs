@@ -6,7 +6,6 @@ using Caliburn.Micro;
 using SharingWorker.FileHost;
 using SharingWorker.ImageHost;
 using SharingWorker.MailHost;
-using SharingWorker.Post;
 using SharingWorker.Video;
 
 namespace SharingWorker
@@ -14,27 +13,23 @@ namespace SharingWorker
     [Flags]
     public enum LoginFlag
     {
-        ImgChili = 1,
-        ImgSpice = 1 << 2,
-        MEGA = 1 << 3,
-        Uploadable = 1 << 4,
-        Blogger = 1 << 5,
-        ImgDrive = 1 << 6,
-        ImgRock = 1 << 7,
-        ImgMega = 1 << 8,
-        Rapidgator = 1 << 9,
+        Blogger = 1,
+        MEGA = 1 << 1,
+        Rapidgator = 1 << 2,
+        Uploadable = 1 << 3,
+        ImgChili = 1 << 4,
+        ImgRock = 1 << 5,
+        PixSense = 1 << 6,
+        ImgTrex = 1 << 7,
     }
 
     partial class ShellViewModel : IShell
     {
         public static ImgChili ImgChili { get; set; }
-        public static ImgSpice ImgSpice { get; set; }
-        public static ImgMega ImgMega { get; set; }
-        public static ImgDrive ImgDrive { get; set; }
         public static ImgRock ImgRock { get; set; }
+        public static PixSense PixSense { get; set; }
         public BindableCollection<UploadInfo> UploadResults { get; set; }
         public RarListViewModel RarList { get; set; }
-        public SharedFilesViewModel SharedFiles { get; set; }
         public static bool IsUploadFinished;
 
         private string message;
@@ -177,16 +172,6 @@ namespace SharingWorker
                 NotifyOfPropertyChange(() => CheckUploadable);
             }
         }
-
-        public bool CheckBinbox
-        {
-            get { return Binbox.CheckEnabled; }
-            set
-            {
-                Binbox.CheckEnabled = value;
-                NotifyOfPropertyChange(() => CheckBinbox);
-            }
-        }
         
         public bool GetMega
         {
@@ -218,23 +203,13 @@ namespace SharingWorker
             }
         }
         
-        public bool GetBinBox
+        public bool GetOuo
         {
-            get { return Binbox.GetEnabled; }
+            get { return Ouo.GetEnabled; }
             set
             {
-                Binbox.GetEnabled = value;
-                NotifyOfPropertyChange(() => GetBinBox);
-            }
-        }
-
-        public bool GetLinkbucks
-        {
-            get { return LinkBucks.GetEnabled; }
-            set
-            {
-                LinkBucks.GetEnabled = value;
-                NotifyOfPropertyChange(() => GetLinkbucks);
+                Ouo.GetEnabled = value;
+                NotifyOfPropertyChange(() => GetOuo);
             }
         }
 
