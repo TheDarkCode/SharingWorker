@@ -146,12 +146,6 @@ namespace SharingWorker.Post
         {
             try
             {
-                var secondHost = string.Empty;
-                if (Rapidgator.GetEnabled)
-                    secondHost = "Rapidgator";
-                else if (Bigfile.GetEnabled)
-                    secondHost = "Bigfile";
-
                 // 建立 Post 物件資料
                 var post = new Google.Apis.Blogger.v3.Data.Post
                 {
@@ -159,7 +153,7 @@ namespace SharingWorker.Post
                     Content = "<div style='text-align: center;'>" +
                                 blogPost.Content +
                                 " </div>" +
-                                string.Format("Download(Mega.nz & {0}): < br />< hr class=\"more\"></hr>", secondHost) +
+                                string.Format("Download(Mega.nz & {0}) :<br /><hr class=\"more\"></hr>", UploadInfo.SecondHostName) +
                                 "<a href=\"" + blogPost.Link + "\">" + blogPost.Link + "</a>",
                 };
 

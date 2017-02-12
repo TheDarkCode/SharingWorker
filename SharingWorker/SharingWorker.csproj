@@ -210,6 +210,7 @@
     <Compile Include="BindableListBox.cs" />
     <Compile Include="BindableListView.cs" />
     <Compile Include="FileHost\Coinlink.cs" />
+    <Compile Include="FileHost\Datafile.cs" />
     <Compile Include="FileHost\Elink.cs" />
     <Compile Include="FileHost\Ouo.cs" />
     <Compile Include="FileHost\PayUrl.cs" />

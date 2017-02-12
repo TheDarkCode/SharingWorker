@@ -43,6 +43,7 @@
                 <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetMega}"/>
                 <MenuItem Header=" Bigfile" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetBigfile}"/>
                 <MenuItem Header=" Rapidgator" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetRapidgator}"/>
+                <MenuItem Header=" Datafile" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetDatafile}"/>
                 <Separator />
                 <MenuItem Header=" Linkbucks" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetLinkbucks}"/>
                 <MenuItem Header=" Shink.in" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetShinkIn}"/>
@@ -118,16 +119,17 @@
                     <CheckBox Content="PixSense" IsChecked="{Binding PixSense.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13" />
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
-                    <CheckBox Content="ImgTrex" IsChecked="{Binding ImgTrex.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
-                    <CheckBox Content="ImgRock" IsChecked="{Binding ImgRock.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
+                    <CheckBox Content="ImgRock" IsChecked="{Binding ImgRock.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
+                    <CheckBox Content="Datafile" IsChecked="{Binding DatafileLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
+                    
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
                     <CheckBox Content="Bigfile" IsChecked="{Binding BigfileLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13" Margin="0,0,0,3"/>
-                    <CheckBox Content="Blogger" IsChecked="{Binding BloggerLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
+                    <CheckBox Content="Rapidgator" IsChecked="{Binding RapidgatorLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
                     <CheckBox Content="MEGA" IsChecked="{Binding MegaLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
-                    <CheckBox Content="Rapidgator" IsChecked="{Binding RapidgatorLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
+                    <CheckBox Content="Blogger" IsChecked="{Binding BloggerLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
                 </StackPanel>

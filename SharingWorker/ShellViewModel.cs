@@ -45,6 +45,7 @@ namespace SharingWorker
             
             GetMega = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Mega"))["Enabled"]);
             GetBigfile = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Bigfile"))["Enabled"]);
+            GetDatafile = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Datafile"))["Enabled"]);
             GetRapidgator = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Rapidgator"))["Enabled"]);
             GetShinkIn = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("ShinkIn"))["Enabled"]);
             
@@ -54,9 +55,6 @@ namespace SharingWorker
             GetThumbnail = true;
             GetCover = true;
             RarList = new RarListViewModel();
-
-            CheckMega = true;
-            CheckBigfile = true;
 
             MailSource = Enum.GetValues(typeof(MailSource)).Cast<MailSource>().Random();
 
@@ -116,6 +114,7 @@ namespace SharingWorker
             if (GetMega) flag |= LoginFlag.MEGA;
             if (GetRapidgator) flag |= LoginFlag.Rapidgator;
             if (GetBigfile) flag |= LoginFlag.Bigfile;
+            if (GetDatafile) flag |= LoginFlag.Datafile;
 
             if (await Login(flag))
                 await MahDialog.ShowMessage("Login", "Login Success!", MessageDialogStyle.Affirmative);
@@ -157,6 +156,13 @@ namespace SharingWorker
                     loginTasks.Add(bigfileLoginTask);
                 }
 
+                Task<bool> datafileLoginTask = null;
+                if (!DatafileLoggedIn && flag.HasFlag(LoginFlag.Datafile))
+                {
+                    datafileLoginTask = Datafile.LogIn();
+                    loginTasks.Add(datafileLoginTask);
+                }
+
                 Task<bool> blogLoginTask = null;
                 if (!BloggerLoggedIn && flag.HasFlag(LoginFlag.Blogger))
                 {
@@ -172,6 +178,8 @@ namespace SharingWorker
                     RapidgatorLoggedIn = await rapidgatorLoginTask;
                 if (bigfileLoginTask != null)
                     BigfileLoggedIn = await bigfileLoginTask;
+                if (datafileLoginTask != null)
+                    DatafileLoggedIn = await datafileLoginTask;
                 if (blogLoginTask != null)
                     BloggerLoggedIn = await blogLoginTask;
             }
@@ -190,6 +198,7 @@ namespace SharingWorker
             if (flag.HasFlag(LoginFlag.MEGA)) ret &= MegaLoggedIn;
             if (flag.HasFlag(LoginFlag.Rapidgator)) ret &= RapidgatorLoggedIn;
             if (flag.HasFlag(LoginFlag.Bigfile)) ret &= BigfileLoggedIn;
+            if (flag.HasFlag(LoginFlag.Datafile)) ret &= DatafileLoggedIn;
             if (flag.HasFlag(LoginFlag.Blogger)) ret &= BloggerLoggedIn;
             CanUpload = ret;
             return ret;
@@ -209,7 +218,8 @@ namespace SharingWorker
                 var megaLinks = MEGA.GetEnabled ? await MEGA.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
                 var rapidgatorLinks = Rapidgator.GetEnabled ? await Rapidgator.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
                 var bigfileLinks = Bigfile.GetEnabled ? await Bigfile.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
-                
+                var datafileLinks = Datafile.GetEnabled ? await Datafile.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
+
                 if (MEGA.GetEnabled && !megaLinks.Any())
                 {
                     uploadInfo.Id += "\n(No MEGA links!)";
@@ -225,6 +235,11 @@ namespace SharingWorker
                     uploadInfo.Id += "\n(No Bigfile links!)";
                     continue;
                 }
+                if (Datafile.GetEnabled && !datafileLinks.Any())
+                {
+                    uploadInfo.Id += "\n(No Datafile links!)";
+                    continue;
+                }
 
                 if (MEGA.GetEnabled && Rapidgator.GetEnabled && megaLinks.Count() != rapidgatorLinks.Count())
                 {
@@ -234,6 +249,11 @@ namespace SharingWorker
                 if (MEGA.GetEnabled && Bigfile.GetEnabled && megaLinks.Count() != bigfileLinks.Count())
                 {
                     uploadInfo.Id += "\n(Missing some Mega/Bigfile links!)";
+                    continue;
+                }
+                if (MEGA.GetEnabled && Datafile.GetEnabled && datafileLinks.Count() != datafileLinks.Count())
+                {
+                    uploadInfo.Id += "\n(Missing some Mega/Datafile links!)";
                     continue;
                 }
 
@@ -307,6 +327,10 @@ namespace SharingWorker
                     else if (Bigfile.GetEnabled)
                     {
                         await uploadInfo.WriteOutput(string.Join("\\n", megaLinks), string.Join("\\n", bigfileLinks));
+                    }
+                    else if (Datafile.GetEnabled)
+                    {
+                        await uploadInfo.WriteOutput(string.Join("\\n", megaLinks), string.Join("\\n", datafileLinks));
                     }
                 }
                 catch (Exception ex)

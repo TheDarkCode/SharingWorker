@@ -39,6 +39,20 @@ namespace SharingWorker
         private static int imageHostIndex;
         private static readonly Random rnd = new Random();
 
+        public static string SecondHostName
+        {
+            get
+            {
+                if (Rapidgator.GetEnabled)
+                    return "Rapidgator";
+                if (Bigfile.GetEnabled)
+                    return "Bigfile";
+                if (Datafile.GetEnabled)
+                    return "Datafile";
+                return string.Empty;
+            }
+        }
+
         private static readonly string outputPath_l =
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\share_l.txt";
 
@@ -477,7 +491,7 @@ namespace SharingWorker
 
 [color=green][b]【檔案格式】：[/b][/color]{2}
 
-[color=green][b]【下載空間】：[/b][/color]Mega & Rapidgator/Bigfile
+[color=green][b]【下載空間】：[/b][/color]Mega & {8}
 
 [color=green][b]【有／無碼】：[/b][/color]{7}
 
@@ -489,7 +503,7 @@ namespace SharingWorker
 
 ==
 
-", title, fileSize, fileFormat, imageCode, cashLinks, videoInfoTw.Title, videoInfoTw.Actresses, censored);
+", title, fileSize, fileFormat, imageCode, cashLinks, videoInfoTw.Title, videoInfoTw.Actresses, censored, SecondHostName);
 
             content = RemoveTitle(title, content);
             var blogLinks = ShinkIn.GetEnabled
@@ -502,7 +516,7 @@ namespace SharingWorker
                     "<div style='text-align: center;'>" +
                     imageCodeBlog +
                     "</div>" +
-                    "Download (Mega.nz, Rapidgator/Bigfile) : <br /><!--more-->" +
+                    string.Format("Download(Mega.nz, {0}) : < br />< !--more-- > ", SecondHostName) +
                     blogLinks
                     + Environment.NewLine + Environment.NewLine +
                     "==" + Environment.NewLine + Environment.NewLine;
@@ -528,12 +542,12 @@ namespace SharingWorker
 Size: {1}
 Format: {2}
 
-[color=green][b]Download (Mega.nz & Rapidgator/Bigfile)：[/b][/color]
+[color=green][b]Download (Mega.nz & {4})：[/b][/color]
 [url]{3}[/url]
 
 ==
 
-", imageCode, fileSize, fileFormat, shortLink);
+", imageCode, fileSize, fileFormat, shortLink, SecondHostName);
 
             File.AppendAllText(outputPath, content);
         }
@@ -546,14 +560,14 @@ Format: {2}
 Size: {1}
 Format: {2}
 
-[color=green][b]Download (Mega.nz & Rapidgator/Bigfile)：[/b][/color]
+[color=green][b]Download (Mega.nz & {4})：[/b][/color]
 [url]{3}[/url]
 
 [b][color=#cc0000]nanamiyusa's Collection[/color] [/b]: [url=http://blog.epc-jav.com]Erotic Public Cloud[/url]
 
 ==
 
-", imageCode, fileSize, fileFormat, shortLink);
+", imageCode, fileSize, fileFormat, shortLink, SecondHostName);
 
             File.AppendAllText(outputPath, content);
         }

@@ -21,6 +21,7 @@ namespace SharingWorker
         ImgRock = 1 << 5,
         PixSense = 1 << 6,
         ImgTrex = 1 << 7,
+        Datafile = 1 << 8,
     }
 
     partial class ShellViewModel : IShell
@@ -86,7 +87,18 @@ namespace SharingWorker
                 NotifyOfPropertyChange(() => BigfileLoggedIn);
             }
         }
-        
+
+        private bool datafileLoggedIn;
+        public bool DatafileLoggedIn
+        {
+            get { return datafileLoggedIn; }
+            set
+            {
+                datafileLoggedIn = value;
+                NotifyOfPropertyChange(() => DatafileLoggedIn);
+            }
+        }
+
         private bool bloggerLoggedIn;
         public bool BloggerLoggedIn
         {
@@ -152,26 +164,6 @@ namespace SharingWorker
                 NotifyOfPropertyChange(() => SelectedUploadInfos);
             }
         }
-
-        public bool CheckMega
-        {
-            get { return MEGA.CheckEnabled; }
-            set
-            {
-                MEGA.CheckEnabled = value;
-                NotifyOfPropertyChange(() => CheckMega);
-            }
-        }
-
-        public bool CheckBigfile
-        {
-            get { return Bigfile.CheckEnabled; }
-            set
-            {
-                Bigfile.CheckEnabled = value;
-                NotifyOfPropertyChange(() => CheckBigfile);
-            }
-        }
         
         public bool GetMega
         {
@@ -202,7 +194,17 @@ namespace SharingWorker
                 NotifyOfPropertyChange(() => GetBigfile);
             }
         }
-        
+
+        public bool GetDatafile
+        {
+            get { return Datafile.GetEnabled; }
+            set
+            {
+                Datafile.GetEnabled = value;
+                NotifyOfPropertyChange(() => GetDatafile);
+            }
+        }
+
         public bool GetShinkIn
         {
             get { return ShinkIn.GetEnabled; }
