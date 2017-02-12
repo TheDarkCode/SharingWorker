@@ -12,6 +12,7 @@ using Google.Apis.Blogger.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Newtonsoft.Json;
+using SharingWorker.FileHost;
 
 namespace SharingWorker.Post
 {
@@ -145,6 +146,12 @@ namespace SharingWorker.Post
         {
             try
             {
+                var secondHost = string.Empty;
+                if (Rapidgator.GetEnabled)
+                    secondHost = "Rapidgator";
+                else if (Bigfile.GetEnabled)
+                    secondHost = "Bigfile";
+
                 // 建立 Post 物件資料
                 var post = new Google.Apis.Blogger.v3.Data.Post
                 {
@@ -152,7 +159,7 @@ namespace SharingWorker.Post
                     Content = "<div style='text-align: center;'>" +
                                 blogPost.Content +
                                 " </div>" +
-                                "Download (Mega.nz & Rapidgator): <br /><hr class=\"more\"></hr>" +
+                                string.Format("Download(Mega.nz & {0}): < br />< hr class=\"more\"></hr>", secondHost) +
                                 "<a href=\"" + blogPost.Link + "\">" + blogPost.Link + "</a>",
                 };
 

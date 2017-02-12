@@ -41,11 +41,11 @@
                 <MenuItem Header=" ImgTrex" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgTrex.Enabled}"/>
                 <Separator />
                 <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetMega}"/>
-                <MenuItem Header=" Uploadable" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetUploadable}"/>
+                <MenuItem Header=" Bigfile" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetBigfile}"/>
                 <MenuItem Header=" Rapidgator" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetRapidgator}"/>
                 <Separator />
                 <MenuItem Header=" Linkbucks" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetLinkbucks}"/>
-                <MenuItem Header=" Ouo.io" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetOuo}"/>
+                <MenuItem Header=" Shink.in" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetShinkIn}"/>
             </MenuItem>
             <MenuItem Header="Video">
                 <MenuItem Header=" Select Videos" cal:Message.Attach="[Event Click] = [Action SelectVideos()]"/>
@@ -122,7 +122,7 @@
                     <CheckBox Content="ImgRock" IsChecked="{Binding ImgRock.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
-
+                    <CheckBox Content="Bigfile" IsChecked="{Binding BigfileLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13" Margin="0,0,0,3"/>
                     <CheckBox Content="Blogger" IsChecked="{Binding BloggerLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">

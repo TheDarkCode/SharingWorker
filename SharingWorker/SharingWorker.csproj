@@ -231,7 +231,7 @@
     <Compile Include="Video\VideoInfo.cs" />
     <Compile Include="Video\VideoUtil.cs" />
     <Compile Include="FileHost\MEGA.cs" />
-    <Compile Include="FileHost\Uploadable.cs" />
+    <Compile Include="FileHost\Bigfile.cs" />
     <Compile Include="ImageHost\IImageHost.cs" />
     <Compile Include="ImageHost\ImgChili.cs" />
     <Compile Include="ImageHost\ImgSpice.cs" />

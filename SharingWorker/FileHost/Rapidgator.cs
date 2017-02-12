@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -32,7 +33,7 @@ namespace SharingWorker.FileHost
 
                     client.DefaultRequestHeaders.Referrer = new Uri("https://rapidgator.net/auth/login");
                     client.DefaultRequestHeaders.ExpectContinue = false;
-
+                    
                     var content = new FormUrlEncodedContent(new[]
                     {
                         new KeyValuePair<string, string>("LoginForm[email]", user),
@@ -55,7 +56,7 @@ namespace SharingWorker.FileHost
             }
         }
 
-        public static async Task<string> GetLinks(string filename)
+        public static async Task<List<string>> GetLinks(string filename)
         {
             try
             {
@@ -78,7 +79,7 @@ namespace SharingWorker.FileHost
 
                     using (var response = await client.PostAsync("http://rapidgator.net/filesystem/FindFile", content))
                     {
-                        var links = new StringBuilder();
+                        var links = new List<string>();
                         var result = await response.Content.ReadAsStringAsync();
                         const string findId = "id32&gt;";
                         foreach (var first in result.AllIndexesOf(findId))
@@ -94,16 +95,16 @@ namespace SharingWorker.FileHost
                             var name = result.Substring(start, end - start);
 
                             var link = string.Format("http://rapidgator.net/file/{0}/{1}.html", id, name);
-                            links.AppendLine(link);
+                            links.Add(link);
                         }
-                        return links.ToString();
+                        return links;
                     }
                 }
             }
             catch (Exception ex)
             {
                 App.Logger.Error("Failed to get links from Rapidgator.", ex);
-                return string.Empty;
+                return Enumerable.Empty<string>().ToList();
             }
         }
     }

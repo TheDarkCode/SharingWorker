@@ -326,10 +326,10 @@ namespace SharingWorker
                 }
 
                 //|| id.Contains("10mu") || id.Contains("1pon") || id.Contains("paco") || id.Contains("caribpr") || id.Contains("heydouga")
-                if ((isCensored || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV") || id.Contains("av-sikou")
+                if ((isCensored || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV") || id.Contains("av-sikou") || id.Contains("heydouga")
                     || id.Contains("H0930") || id.Contains("h0930") || id.Contains("H4610") || id.Contains("h4610") || id.Contains("C0930") || id.Contains("c0930")
                     ) 
-                    && Ouo.GetEnabled && !string.IsNullOrEmpty(megaLinks))
+                    && ShinkIn.GetEnabled && !string.IsNullOrEmpty(megaLinks))
                 {
                     var allLinks = megaLinks.Split(new string[] { "\\n" }, StringSplitOptions.None);
                     var firstLine = true;
@@ -352,17 +352,17 @@ namespace SharingWorker
                     }
                     megaLinks = sb.ToString().TrimEnd("\\n".ToCharArray());
                 }
-                else if (!isCensored && Ouo.GetEnabled && !string.IsNullOrEmpty(megaLinks))
+                else if (!isCensored && ShinkIn.GetEnabled && !string.IsNullOrEmpty(megaLinks))
                 {
                     var allLinks = megaLinks.Split(new string[] { "\\n" }, StringSplitOptions.None);
                     var sb = new StringBuilder();
                     foreach (var link in allLinks)
                     {
-                        var ouoLink = await ShinkIn.GetLink(link);
-                        if (string.IsNullOrEmpty(ouoLink) || ouoLink.Length > 30)
-                            ouoLink = link;
+                        var shinkLink = await ShinkIn.GetLink(link);
+                        if (string.IsNullOrEmpty(shinkLink) || shinkLink.Length > 30)
+                            shinkLink = link;
 
-                        sb.Append(string.Format("{0}\\n", ouoLink));                       
+                        sb.Append(string.Format("{0}\\n", shinkLink));                       
                     }
                     megaLinks = sb.ToString().TrimEnd("\\n".ToCharArray());
                 }
@@ -406,7 +406,7 @@ namespace SharingWorker
                 else
                 {
                     cashLink = linksPage;
-                    if (Ouo.GetEnabled)
+                    if (ShinkIn.GetEnabled)
                     {
                         cashLink = await ShinkIn.GetLink(linksPage);
                         if (string.IsNullOrEmpty(cashLink) || cashLink.Length > 30)
@@ -477,7 +477,7 @@ namespace SharingWorker
 
 [color=green][b]【檔案格式】：[/b][/color]{2}
 
-[color=green][b]【下載空間】：[/b][/color]Mega & Rapidgator
+[color=green][b]【下載空間】：[/b][/color]Mega & Rapidgator/Bigfile
 
 [color=green][b]【有／無碼】：[/b][/color]{7}
 
@@ -492,7 +492,7 @@ namespace SharingWorker
 ", title, fileSize, fileFormat, imageCode, cashLinks, videoInfoTw.Title, videoInfoTw.Actresses, censored);
 
             content = RemoveTitle(title, content);
-            var blogLinks = Ouo.GetEnabled
+            var blogLinks = ShinkIn.GetEnabled
                 ? string.Format("<a href=\"{0}\">{0}</a>", cashLinks) : cashLinks;
 
             File.AppendAllText(outputPath_lh, content);
@@ -502,7 +502,7 @@ namespace SharingWorker
                     "<div style='text-align: center;'>" +
                     imageCodeBlog +
                     "</div>" +
-                    "Download (Mega.nz, Rapidgator) : <br /><!--more-->" +
+                    "Download (Mega.nz, Rapidgator/Bigfile) : <br /><!--more-->" +
                     blogLinks
                     + Environment.NewLine + Environment.NewLine +
                     "==" + Environment.NewLine + Environment.NewLine;
@@ -528,7 +528,7 @@ namespace SharingWorker
 Size: {1}
 Format: {2}
 
-[color=green][b]Download (Mega.nz & Rapidgator)：[/b][/color]
+[color=green][b]Download (Mega.nz & Rapidgator/Bigfile)：[/b][/color]
 [url]{3}[/url]
 
 ==
@@ -546,7 +546,7 @@ Format: {2}
 Size: {1}
 Format: {2}
 
-[color=green][b]Download (Mega.nz & Rapidgator)：[/b][/color]
+[color=green][b]Download (Mega.nz & Rapidgator/Bigfile)：[/b][/color]
 [url]{3}[/url]
 
 [b][color=#cc0000]nanamiyusa's Collection[/color] [/b]: [url=http://blog.epc-jav.com]Erotic Public Cloud[/url]

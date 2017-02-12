@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -98,18 +99,18 @@ namespace SharingWorker.FileHost
             });
         }
 
-        public static async Task<string> GetLinks(string filename)
+        public static async Task<List<string>> GetLinks(string filename)
         {
-            if (links == null) return string.Empty;
+            if (links == null) return Enumerable.Empty<string>().ToList();
             return await Task.Run(() =>
             {
                 var searchLinks = links.Where(s => s.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
                 
-                string ret = null;
+                var ret = new List<string>();
                 foreach (var link in searchLinks)
                 {
                     var end = link.IndexOf(" ", StringComparison.OrdinalIgnoreCase);
-                    ret += link.Remove(end) + Environment.NewLine;
+                    ret.Add(link.Remove(end));
                 }
                 return ret;
             });

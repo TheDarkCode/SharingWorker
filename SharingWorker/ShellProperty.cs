@@ -16,7 +16,7 @@ namespace SharingWorker
         Blogger = 1,
         MEGA = 1 << 1,
         Rapidgator = 1 << 2,
-        Uploadable = 1 << 3,
+        Bigfile = 1 << 3,
         ImgChili = 1 << 4,
         ImgRock = 1 << 5,
         PixSense = 1 << 6,
@@ -76,14 +76,14 @@ namespace SharingWorker
             }
         }
 
-        private bool uploadableLoggedIn;
-        public bool UploadableLoggedIn
+        private bool bigfileLoggedIn;
+        public bool BigfileLoggedIn
         {
-            get { return uploadableLoggedIn; }
+            get { return bigfileLoggedIn; }
             set
             {
-                uploadableLoggedIn = value;
-                NotifyOfPropertyChange(() => UploadableLoggedIn);
+                bigfileLoggedIn = value;
+                NotifyOfPropertyChange(() => BigfileLoggedIn);
             }
         }
         
@@ -163,13 +163,13 @@ namespace SharingWorker
             }
         }
 
-        public bool CheckUploadable
+        public bool CheckBigfile
         {
-            get { return Uploadable.CheckEnabled; }
+            get { return Bigfile.CheckEnabled; }
             set
             {
-                Uploadable.CheckEnabled = value;
-                NotifyOfPropertyChange(() => CheckUploadable);
+                Bigfile.CheckEnabled = value;
+                NotifyOfPropertyChange(() => CheckBigfile);
             }
         }
         
@@ -193,23 +193,23 @@ namespace SharingWorker
             }
         }
 
-        public bool GetUploadable
+        public bool GetBigfile
         {
-            get { return Uploadable.GetEnabled; }
+            get { return Bigfile.GetEnabled; }
             set
             {
-                Uploadable.GetEnabled = value;
-                NotifyOfPropertyChange(() => GetUploadable);
+                Bigfile.GetEnabled = value;
+                NotifyOfPropertyChange(() => GetBigfile);
             }
         }
         
-        public bool GetOuo
+        public bool GetShinkIn
         {
-            get { return Ouo.GetEnabled; }
+            get { return ShinkIn.GetEnabled; }
             set
             {
-                Ouo.GetEnabled = value;
-                NotifyOfPropertyChange(() => GetOuo);
+                ShinkIn.GetEnabled = value;
+                NotifyOfPropertyChange(() => GetShinkIn);
             }
         }
 

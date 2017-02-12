@@ -4,7 +4,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Configuration;
-using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -45,9 +44,9 @@ namespace SharingWorker
             LoadConfig(PixSense);
             
             GetMega = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Mega"))["Enabled"]);
-            GetUploadable = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Uploadable"))["Enabled"]);
+            GetBigfile = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Bigfile"))["Enabled"]);
             GetRapidgator = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Rapidgator"))["Enabled"]);
-            GetOuo = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Ouo"))["Enabled"]);
+            GetShinkIn = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("ShinkIn"))["Enabled"]);
             
             Blogger.PostProgressEvent += Blogger_PostProgressEvent;
             
@@ -57,7 +56,7 @@ namespace SharingWorker
             RarList = new RarListViewModel();
 
             CheckMega = true;
-            CheckUploadable = true;
+            CheckBigfile = true;
 
             MailSource = Enum.GetValues(typeof(MailSource)).Cast<MailSource>().Random();
 
@@ -116,7 +115,7 @@ namespace SharingWorker
             if (PixSense.Enabled) flag |= LoginFlag.PixSense;
             if (GetMega) flag |= LoginFlag.MEGA;
             if (GetRapidgator) flag |= LoginFlag.Rapidgator;
-            if (GetUploadable) flag |= LoginFlag.Uploadable;
+            if (GetBigfile) flag |= LoginFlag.Bigfile;
 
             if (await Login(flag))
                 await MahDialog.ShowMessage("Login", "Login Success!", MessageDialogStyle.Affirmative);
@@ -151,11 +150,11 @@ namespace SharingWorker
                     loginTasks.Add(rapidgatorLoginTask);
                 }
 
-                Task<bool> uploadableLoginTask = null;
-                if (!UploadableLoggedIn && flag.HasFlag(LoginFlag.Uploadable))
+                Task<bool> bigfileLoginTask = null;
+                if (!BigfileLoggedIn && flag.HasFlag(LoginFlag.Bigfile))
                 {
-                    uploadableLoginTask = Uploadable.LogIn();
-                    loginTasks.Add(uploadableLoginTask);
+                    bigfileLoginTask = Bigfile.LogIn();
+                    loginTasks.Add(bigfileLoginTask);
                 }
 
                 Task<bool> blogLoginTask = null;
@@ -171,8 +170,8 @@ namespace SharingWorker
                     MegaLoggedIn =await megaLoginTask;
                 if (rapidgatorLoginTask != null)
                     RapidgatorLoggedIn = await rapidgatorLoginTask;
-                if (uploadableLoginTask != null)
-                    UploadableLoggedIn = await uploadableLoginTask;
+                if (bigfileLoginTask != null)
+                    BigfileLoggedIn = await bigfileLoginTask;
                 if (blogLoginTask != null)
                     BloggerLoggedIn = await blogLoginTask;
             }
@@ -190,7 +189,7 @@ namespace SharingWorker
             if (flag.HasFlag(LoginFlag.PixSense)) ret &= PixSense.LoggedIn;
             if (flag.HasFlag(LoginFlag.MEGA)) ret &= MegaLoggedIn;
             if (flag.HasFlag(LoginFlag.Rapidgator)) ret &= RapidgatorLoggedIn;
-            if (flag.HasFlag(LoginFlag.Uploadable)) ret &= UploadableLoggedIn;
+            if (flag.HasFlag(LoginFlag.Bigfile)) ret &= BigfileLoggedIn;
             if (flag.HasFlag(LoginFlag.Blogger)) ret &= BloggerLoggedIn;
             CanUpload = ret;
             return ret;
@@ -203,38 +202,41 @@ namespace SharingWorker
             IsUploadFinished = false;
             Message = "";
             Blogger.StartPosting();
-
-            //var checkPicasa = true;
+            
             var rnd = new Random();
             foreach (var uploadInfo in UploadResults)
             {
-                var megaLinks = MEGA.GetEnabled ? await MEGA.GetLinks(uploadInfo.Id) : string.Empty;
-                if (!string.IsNullOrEmpty(megaLinks))
-                    megaLinks = megaLinks.TrimEnd(Environment.NewLine.ToCharArray()).Replace("\r\n", "\\n");
-
-                var rapidgatorLinks = Rapidgator.GetEnabled ? await Rapidgator.GetLinks(uploadInfo.Id) : string.Empty;
-                if (!string.IsNullOrEmpty(rapidgatorLinks))
-                    rapidgatorLinks = rapidgatorLinks.TrimEnd(Environment.NewLine.ToCharArray()).Replace("\r\n", "\\n");
-
-                var megaCount = megaLinks.AllIndexesOf("mega.nz").Count();
-                var rapidgatorCount = rapidgatorLinks.AllIndexesOf("rapidgator").Count();
-
-                if (string.IsNullOrEmpty(megaLinks) && MEGA.GetEnabled)
+                var megaLinks = MEGA.GetEnabled ? await MEGA.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
+                var rapidgatorLinks = Rapidgator.GetEnabled ? await Rapidgator.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
+                var bigfileLinks = Bigfile.GetEnabled ? await Bigfile.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
+                
+                if (MEGA.GetEnabled && !megaLinks.Any())
                 {
                     uploadInfo.Id += "\n(No MEGA links!)";
                     continue;
                 }
-                if (string.IsNullOrEmpty(rapidgatorLinks) && Rapidgator.GetEnabled)
+                if (Rapidgator.GetEnabled && !rapidgatorLinks.Any())
                 {
                     uploadInfo.Id += "\n(No Rapidgator links!)";
                     continue;
                 }
-                if (MEGA.GetEnabled && Rapidgator.GetEnabled && megaCount != rapidgatorCount)
+                if (Bigfile.GetEnabled && !bigfileLinks.Any())
+                {
+                    uploadInfo.Id += "\n(No Bigfile links!)";
+                    continue;
+                }
+
+                if (MEGA.GetEnabled && Rapidgator.GetEnabled && megaLinks.Count() != rapidgatorLinks.Count())
                 {
                     uploadInfo.Id += "\n(Missing some Mega/Rapidgator links!)";
                     continue;
                 }
-                
+                if (MEGA.GetEnabled && Bigfile.GetEnabled && megaLinks.Count() != bigfileLinks.Count())
+                {
+                    uploadInfo.Id += "\n(Missing some Mega/Bigfile links!)";
+                    continue;
+                }
+
                 var uploadTasks = new List<Task<List<string>>>();
 
                 if (ImgChili.LoggedIn && ImgChili.Enabled)
@@ -298,7 +300,14 @@ namespace SharingWorker
 
                 try
                 {
-                    await uploadInfo.WriteOutput(megaLinks, rapidgatorLinks);
+                    if (Rapidgator.GetEnabled)
+                    {
+                        await uploadInfo.WriteOutput(string.Join("\\n", megaLinks), string.Join("\\n", rapidgatorLinks));
+                    }
+                    else if (Bigfile.GetEnabled)
+                    {
+                        await uploadInfo.WriteOutput(string.Join("\\n", megaLinks), string.Join("\\n", bigfileLinks));
+                    }
                 }
                 catch (Exception ex)
                 {
