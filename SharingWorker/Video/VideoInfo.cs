@@ -55,6 +55,7 @@ namespace SharingWorker.Video
                 const string find = "-mesubuta";
                 return fileName.Substring(0, fileName.IndexOf(find) + find.Length);
             }
+
             if (fileName.EndsWith("_full"))
             {
                 var rmIdx = fileName.LastIndexOf("_full");
@@ -159,18 +160,23 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_1000giri(id, lang);
                 }
-                if (id.Contains("SIRO-"))
+                if (id.StartsWith("SIRO-"))
                 {
                     return await GetVideoInfo_SIRO(id, lang);
                 }
-                if (id.Contains("200GANA-"))
+                if (id.StartsWith("200GANA-"))
                 {
                     return await GetVideoInfo_200GANA(id, lang);
                 }
-                if (id.Contains("259LUXU-"))
+                if (id.StartsWith("259LUXU-"))
                 {
                     return await GetVideoInfo_259LUXU(id, lang);
                 }
+                if (id.StartsWith("PGM_") || id.StartsWith("pgm_"))
+                {
+                    return await GetVideoInfo_PGM(id, lang);
+                }
+
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
                 {
                     return new VideoInfo {Title = "", Actresses = ""};
@@ -295,7 +301,7 @@ namespace SharingWorker.Video
             return ret;
         }
 
-        private static async Task<VideoInfo> GetVideoInfo_heyzo(string id, QueryLang lang)
+        public static async Task<VideoInfo> GetVideoInfo_heyzo(string id, QueryLang lang)
         {
             var url = string.Empty;
             var ret = new VideoInfo { Title = "", Actresses = "" };
@@ -335,7 +341,7 @@ namespace SharingWorker.Video
                                     }
 
                                     start = end + 1;
-                                    var end1 = response.IndexOf(" - 無修正動画 HEYZO</title>", start, StringComparison.Ordinal);
+                                    var end1 = response.IndexOf(" - アダルト動画 HEYZO</title>", start, StringComparison.Ordinal);
                                     if (end1 >= 0)
                                     {
                                         ret.Title = end1 - start <= 0 ? string.Empty : string.Format("HEYZO {0} {1} {2}", num, response.Substring(start, end1 - start), ret.Actresses);
@@ -1212,6 +1218,52 @@ namespace SharingWorker.Video
                                     end = responseString.IndexOf("</li>", start, StringComparison.Ordinal);
                                     ret.Actresses = responseString.Substring(start, end - start);
                                     ret.Title = string.Format("259LUXU-{0} {1} {2}", num, title, ret.Actresses);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_PGM(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("PGM_", string.Empty).Replace("pgm_", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://www.g-area.org/sample_pg/{0}/spgallery.php", num.ToLower());
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var response = await client.GetByteArrayAsync(url);
+                        var responseString = Encoding.GetEncoding("Shift_JIS").GetString(response, 0, response.Length - 1);
+
+                        var search = "<title>";
+
+                        var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf(" ", start, StringComparison.OrdinalIgnoreCase);
+                            if (end >= 0)
+                            {
+                                var title = responseString.Substring(start, end - start);
+
+                                search = "<span class=\"sub_titleo\">";
+                                start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                                if (start >= 0)
+                                {
+                                    start = start + search.Length;
+                                    end = responseString.IndexOf("</span>", start, StringComparison.Ordinal);
+                                    ret.Actresses = responseString.Substring(start, end - start);
+                                    ret.Title = string.Format("G-AREA {0} {1} {2}", num.ToUpper(), title, ret.Actresses);
                                 }
                             }
                         }

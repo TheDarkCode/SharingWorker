@@ -339,9 +339,10 @@ namespace SharingWorker
                     fileSize = VideoUtil.GetFileSizeGB(uploadPath, id) + "GB";
                 }
 
-                //|| id.Contains("10mu") || id.Contains("1pon") || id.Contains("paco") || id.Contains("caribpr") || id.Contains("heydouga")
+                //
                 if ((isCensored || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV") || id.Contains("av-sikou") || id.Contains("heydouga")
                     || id.Contains("H0930") || id.Contains("h0930") || id.Contains("H4610") || id.Contains("h4610") || id.Contains("C0930") || id.Contains("c0930")
+                    || id.Contains("heyzo") || id.Contains("10mu") || id.Contains("1pon") || id.Contains("carib") || id.Contains("paco") || id.Contains("caribpr")
                     ) 
                     && ShinkIn.GetEnabled && !string.IsNullOrEmpty(megaLinks))
                 {
@@ -354,8 +355,12 @@ namespace SharingWorker
                         {
                             var firstLink = await ShinkIn.GetLink(link);
                             if (string.IsNullOrEmpty(firstLink) || firstLink.Length > 30)
-                                firstLink = link;
-                            
+                            {
+                                firstLink = await Ouo.GetLink(link);
+                                if (string.IsNullOrEmpty(firstLink))
+                                    firstLink = link;
+                            }
+
                             sb.Append(string.Format("{0}\\n", firstLink));
                             firstLine = false;
                         }
@@ -409,40 +414,40 @@ namespace SharingWorker
                     Links = contentBackup,
                 };
 
-                string cashLink = string.Empty;
+                var shinkinLink = string.Empty;
+                var ouoLink = string.Empty;
+
                 var linksPage = Blogger.CreateLinksPost(content);
                 if (string.IsNullOrEmpty(linksPage))
                 {
                     await
-                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, content,
-                        linksBackup, isCensored, rgLinks);
+                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored);
                 }
                 else
                 {
-                    cashLink = linksPage;
-                    if (ShinkIn.GetEnabled)
+                    if (ShinkIn.GetEnabled && Ouo.GetEnabled)
                     {
-                        cashLink = await ShinkIn.GetLink(linksPage);
-                        if (string.IsNullOrEmpty(cashLink) || cashLink.Length > 30)
-                            cashLink = linksPage;
+                        shinkinLink = await GetLinksPageShink(linksPage);
+                        ouoLink = await Ouo.GetLink(linksPage);
+                    }
+                    else if (ShinkIn.GetEnabled && !Ouo.GetEnabled)
+                    {
+                        shinkinLink = await GetLinksPageShink(linksPage);
+                    }
+                    else if (!ShinkIn.GetEnabled && Ouo.GetEnabled)
+                    {
+                        ouoLink = await Ouo.GetLink(linksPage);
                     }
 
                     await
-                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, cashLink,
-                            linksBackup, isCensored, rgLinks);
+                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored, shinkinLink, ouoLink);
                 }
 
-                var payurlLink = await Urle.GetLink(linksPage);
-                //var westLink = cashLink.Replace("shink.in", "shink.me");
-                var westLink = payurlLink;
-                if (!string.IsNullOrEmpty(payurlLink))
-                {
-                    GenerateJavLibrary(payurlLink, fileSize, fileFormat, imageCode);
-                }
-                if (!string.IsNullOrEmpty(westLink))
-                {
-                    GenerateWestern(westLink, fileSize, fileFormat, imageCode);
-                }
+                if (!string.IsNullOrEmpty(linksPage) && string.IsNullOrEmpty(ouoLink))
+                    ouoLink = await Ouo.GetLink(linksPage);
+
+                GenerateJavLibrary(ouoLink, fileSize, fileFormat, imageCode);
+                GenerateWestern(ouoLink, shinkinLink, fileSize, fileFormat, imageCode);
             }
             catch (Exception ex)
             {
@@ -450,7 +455,18 @@ namespace SharingWorker
             }
         }
 
-        private void GenerateBlogPost(string title, string imageCodeBlog, string cashLinks, LinksBackup linksBackup, VideoInfo videoInfo, string rgLinks)
+        private async Task<string> GetLinksPageShink(string linksPage)
+        {
+            var ret = await ShinkIn.GetLink(linksPage);
+            if (string.IsNullOrEmpty(ret) || ret.Length > 30)
+            {
+                await Task.Delay(3000);
+                ret = await ShinkIn.GetLink(linksPage);
+            }
+            return ret;
+        }
+
+        private void GenerateBlogPost(string title, string imageCodeBlog, string linksPage, string shinkinLink, string ouoLink, LinksBackup linksBackup, VideoInfo videoInfo)
         {
             var blogTitle = "";
             if (videoInfo.Title.Contains("Tokyo Hot"))
@@ -463,21 +479,58 @@ namespace SharingWorker
                 if (blogTitle.Count(c => c == '-') == 1 && !blogTitle.Contains('_'))
                     blogTitle = blogTitle.Replace("-", "");
             }
-
             blogTitle = RemoveTitle(title, blogTitle);
-            Blogger.AddPost(new Blogger.BlogPost(blogTitle, imageCodeBlog, cashLinks, linksBackup, rgLinks));
+
+            var linksContent = linksPage;
+            if (!string.IsNullOrEmpty(shinkinLink) && !string.IsNullOrEmpty(ouoLink))
+            {
+                linksContent = "<a href=\"" + shinkinLink + "\">" + shinkinLink + "</a><br />or<br /><a href=\"" + ouoLink + "\">" + ouoLink + "</a>";
+            }
+            else if (!string.IsNullOrEmpty(shinkinLink) && string.IsNullOrEmpty(ouoLink))
+            {
+                linksContent = "<a href=\"" + shinkinLink + "\">" + shinkinLink + "</a>";
+            }
+            else if (string.IsNullOrEmpty(shinkinLink) && !string.IsNullOrEmpty(ouoLink))
+            {
+                linksContent = "<a href=\"" + ouoLink + "\">" + ouoLink + "</a>";
+            }
+
+            Blogger.AddPost(new Blogger.BlogPost(blogTitle, imageCodeBlog, linksContent, linksBackup));
+
+            var content = string.Format("{0} ({1})", videoInfo.Title, title) + Environment.NewLine + Environment.NewLine +
+                    "<div style='text-align: center;'>" +
+                    imageCodeBlog +
+                    "</div>" +
+                    string.Format("Download(Mega.nz, {0}) : < br />< !--more-- > ", SecondHostName) +
+                    linksContent
+                    + Environment.NewLine + Environment.NewLine +
+                    "==" + Environment.NewLine + Environment.NewLine;
+
+            File.AppendAllText(outputPath_blog, content);
         }
 
         private async Task GenerateOutput(string title, string fileSize, string fileFormat, string imageCode,
-            string imageCodeBlog, string cashLinks, LinksBackup linksBackup , bool isCensored, string rgLinks)
+            string imageCodeBlog, string linksPage, LinksBackup linksBackup , bool isCensored,
+            string shinkinLink = null, string ouoLink = null)
         {
             var videoInfoTw = await VideoInfo.QueryVideoInfo(title, QueryLang.TW);
 
-            GenerateBlogPost(title, imageCodeBlog, cashLinks, linksBackup, videoInfoTw, rgLinks);
+            GenerateBlogPost(title, imageCodeBlog, linksPage, shinkinLink, ouoLink, linksBackup, videoInfoTw);
 
             var censored = isCensored ? "有碼" : "無碼";
-            var wTitle = string.Format(" ({0})", title);
-            if (title.Contains("1pon") || title.Contains("carib")) wTitle = string.Empty;
+            var linksContent = linksPage;
+            if (!string.IsNullOrEmpty(shinkinLink) && !string.IsNullOrEmpty(ouoLink))
+            {
+                linksContent = shinkinLink + Environment.NewLine + "or" + Environment.NewLine + ouoLink;
+            }
+            else if (!string.IsNullOrEmpty(shinkinLink) && string.IsNullOrEmpty(ouoLink))
+            {
+                linksContent = shinkinLink;
+            }
+            else if (string.IsNullOrEmpty(shinkinLink) && !string.IsNullOrEmpty(ouoLink))
+            {
+                linksContent = ouoLink;
+            }
 
             var content = string.Format(@"{5} ({0}) [{1}/{2}][多空]
 
@@ -499,29 +552,32 @@ namespace SharingWorker
 {3}
 
 [color=green][b]【檔案載點】：[/b][/color]
-[hide]{4}[/hide]
+[hide]
+{4}
+[/hide]
 
 ==
 
-", title, fileSize, fileFormat, imageCode, cashLinks, videoInfoTw.Title, videoInfoTw.Actresses, censored, SecondHostName);
+", title, fileSize, fileFormat, imageCode, linksContent, videoInfoTw.Title, videoInfoTw.Actresses, censored, SecondHostName);
 
             content = RemoveTitle(title, content);
-            var blogLinks = ShinkIn.GetEnabled
-                ? string.Format("<a href=\"{0}\">{0}</a>", cashLinks) : cashLinks;
 
             File.AppendAllText(outputPath_lh, content);
-            File.AppendAllText(outputPath_l, content.Replace("[hide]", string.Empty).Replace("[/hide]", string.Empty));
-            
-            content = string.Format("{0} ({1})", videoInfoTw.Title, title) + Environment.NewLine + Environment.NewLine +
-                    "<div style='text-align: center;'>" +
-                    imageCodeBlog +
-                    "</div>" +
-                    string.Format("Download(Mega.nz, {0}) : < br />< !--more-- > ", SecondHostName) +
-                    blogLinks
-                    + Environment.NewLine + Environment.NewLine +
-                    "==" + Environment.NewLine + Environment.NewLine;
+            File.AppendAllText(outputPath_l, content.Replace(Environment.NewLine + "[hide]", string.Empty).Replace("[/hide]" + Environment.NewLine, string.Empty));
 
-            File.AppendAllText(outputPath_blog, content);
+    //        var blogLinks = ShinkIn.GetEnabled
+    //? string.Format("<a href=\"{0}\">{0}</a>", cashLinks) : cashLinks;
+
+    //        content = string.Format("{0} ({1})", videoInfoTw.Title, title) + Environment.NewLine + Environment.NewLine +
+    //                "<div style='text-align: center;'>" +
+    //                imageCodeBlog +
+    //                "</div>" +
+    //                string.Format("Download(Mega.nz, {0}) : < br />< !--more-- > ", SecondHostName) +
+    //                blogLinks
+    //                + Environment.NewLine + Environment.NewLine +
+    //                "==" + Environment.NewLine + Environment.NewLine;
+
+    //        File.AppendAllText(outputPath_blog, content);
         }
 
         private string RemoveTitle(string title, string content)
@@ -534,20 +590,24 @@ namespace SharingWorker
             return content;
         }
 
-        private void GenerateWestern(string shortLink, string fileSize, string fileFormat, string imageCode)
+        private void GenerateWestern(string ouoLink, string shinkLink, string fileSize, string fileFormat, string imageCode)
         {
+            shinkLink = shinkLink.Replace("shink.in", "shink.me");
+
             var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\west.txt";
             var content = string.Format(@"{0}
 
 Size: {1}
 Format: {2}
 
-[color=green][b]Download (Mega.nz & {4})：[/b][/color]
-[url]{3}[/url]
+[color=green][b]Download (Mega.nz & {3})：[/b][/color]
+[url]{4}[/url]
+or
+[url]{5}[/url]
 
 ==
 
-", imageCode, fileSize, fileFormat, shortLink, SecondHostName);
+", imageCode, fileSize, fileFormat, SecondHostName, shinkLink, ouoLink);
 
             File.AppendAllText(outputPath, content);
         }

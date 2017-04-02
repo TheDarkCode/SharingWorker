@@ -215,6 +215,16 @@ namespace SharingWorker
             }
         }
 
+        public bool GetOuo
+        {
+            get { return Ouo.GetEnabled; }
+            set
+            {
+                Ouo.GetEnabled = value;
+                NotifyOfPropertyChange(() => GetOuo);
+            }
+        }
+
         private MailSource mailSource;
         public MailSource MailSource
         {

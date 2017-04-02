@@ -47,8 +47,10 @@ namespace SharingWorker
             GetBigfile = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Bigfile"))["Enabled"]);
             GetDatafile = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Datafile"))["Enabled"]);
             GetRapidgator = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Rapidgator"))["Enabled"]);
+
             GetShinkIn = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("ShinkIn"))["Enabled"]);
-            
+            GetOuo = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Ouo"))["Enabled"]);
+
             Blogger.PostProgressEvent += Blogger_PostProgressEvent;
             
             CompressToRar = true;

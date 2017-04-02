@@ -20,19 +20,19 @@ namespace SharingWorker.Post
     {
         public class BlogPost
         {
-            public BlogPost(string title, string content, string link, LinksBackup linksBackup, string rgLinks = null)
+            public BlogPost(string title, string imageContent, string linksContent, LinksBackup linksBackup, string rgLinks = null)
             {
                 Title = title;
-                Content = content;
-                Link = link;
+                ImageContent = imageContent;
+                LinksContent = linksContent;
                 LinksBackup = linksBackup;
-                if (!string.IsNullOrEmpty(rgLinks))
-                    RgLinks = rgLinks.Replace("\\n", "<br />"); ;
+                //if (!string.IsNullOrEmpty(rgLinks))
+                //    RgLinks = rgLinks.Replace("\\n", "<br />"); ;
             }
             public string Title;
-            public string Content;
-            public string Link;
-            public string RgLinks;
+            public string ImageContent;
+            public string LinksContent;
+            //public string RgLinks;
             public LinksBackup LinksBackup;
         }
 
@@ -151,10 +151,10 @@ namespace SharingWorker.Post
                 {
                     Title = blogPost.Title,
                     Content = "<div style='text-align: center;'>" +
-                                blogPost.Content +
+                                blogPost.ImageContent +
                                 " </div>" +
                                 string.Format("Download(Mega.nz & {0}) :<br /><hr class=\"more\"></hr>", UploadInfo.SecondHostName) +
-                                "<a href=\"" + blogPost.Link + "\">" + blogPost.Link + "</a>",
+                                blogPost.LinksContent,
                 };
 
                 // 送出 Insert Request

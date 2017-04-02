@@ -45,8 +45,8 @@
                 <MenuItem Header=" Rapidgator" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetRapidgator}"/>
                 <MenuItem Header=" Datafile" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetDatafile}"/>
                 <Separator />
-                <MenuItem Header=" Linkbucks" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetLinkbucks}"/>
                 <MenuItem Header=" Shink.in" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetShinkIn}"/>
+                <MenuItem Header=" Ouo.io" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetOuo}"/>
             </MenuItem>
             <MenuItem Header="Video">
                 <MenuItem Header=" Select Videos" cal:Message.Attach="[Event Click] = [Action SelectVideos()]"/>
