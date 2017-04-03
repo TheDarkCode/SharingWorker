@@ -176,6 +176,10 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_PGM(id, lang);
                 }
+                if (id.StartsWith("fc2-ppv") || id.StartsWith("FC2-PPV"))
+                {
+                    return await GetVideoInfo_FC2(id, lang);
+                }
 
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
                 {
@@ -1265,6 +1269,44 @@ namespace SharingWorker.Video
                                     ret.Actresses = responseString.Substring(start, end - start);
                                     ret.Title = string.Format("G-AREA {0} {1} {2}", num.ToUpper(), title, ret.Actresses);
                                 }
+                            }
+                        }
+                    }
+                    break;
+                case QueryLang.EN:
+                    break;
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetVideoInfo_FC2(string id, QueryLang lang)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("fc2-ppv-", string.Empty).Replace("FC2-PPV-", string.Empty);
+
+            switch (lang)
+            {
+                case QueryLang.TW:
+                    url = string.Format("http://adult.contents.fc2.com/article_search.php?id={0}", num);
+                    using (var handler = new HttpClientHandler())
+                    using (var client = new HttpClient(handler))
+                    {
+                        var response = await client.GetByteArrayAsync(url);
+                        var responseString = Encoding.UTF8.GetString(response, 0, response.Length - 1);
+                        
+                        var search = "<title>";
+
+                        var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            var end = responseString.IndexOf("</title>", start, StringComparison.OrdinalIgnoreCase);
+                            if (end >= 0)
+                            {
+                                var title = responseString.Substring(start, end - start);
+                                ret.Actresses = string.Empty;
+                                ret.Title = string.Format("FC2-PPV {0} {1}", num, title);
                             }
                         }
                     }
