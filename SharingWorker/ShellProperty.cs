@@ -20,7 +20,6 @@ namespace SharingWorker
         ImgChili = 1 << 4,
         ImgRock = 1 << 5,
         PixSense = 1 << 6,
-        ImgTrex = 1 << 7,
         Datafile = 1 << 8,
     }
 

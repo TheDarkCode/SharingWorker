@@ -38,7 +38,6 @@
                 <MenuItem Header=" ImgChili" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgChili.Enabled}"/>
                 <MenuItem Header=" ImgRock" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgRock.Enabled}"/>
                 <MenuItem Header=" PixSense" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding PixSense.Enabled}"/>
-                <MenuItem Header=" ImgTrex" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgTrex.Enabled}"/>
                 <Separator />
                 <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetMega}"/>
                 <MenuItem Header=" Bigfile" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetBigfile}"/>

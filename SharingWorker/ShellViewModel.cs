@@ -299,12 +299,6 @@ namespace SharingWorker
                             uploadInfo.ForumLinks3 = links[1].Trim();
                             uploadCount++;
                         }
-                        else if (links[0].Contains("imgtrex"))
-                        {
-                            uploadInfo.WebLinks4 = links[0].Trim();
-                            uploadInfo.ForumLinks4 = ToLowerForumCode(links[1].Trim());
-                            uploadCount++;
-                        }
                     }
                     catch (Exception ex)
                     {
