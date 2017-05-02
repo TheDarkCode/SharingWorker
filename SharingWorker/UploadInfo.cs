@@ -341,11 +341,7 @@ namespace SharingWorker
                 }
 
                 //
-                if ((isCensored || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV") || id.Contains("av-sikou") || id.Contains("heydouga")
-                    || id.Contains("H0930") || id.Contains("h0930") || id.Contains("H4610") || id.Contains("h4610") || id.Contains("C0930") || id.Contains("c0930")
-                    || id.Contains("heyzo") || id.Contains("10mu") || id.Contains("1pon") || id.Contains("carib") || id.Contains("paco") || id.Contains("caribpr")
-                    || id.Contains("fc2-ppv") ) 
-                    && ShinkIn.GetEnabled && !string.IsNullOrEmpty(megaLinks))
+                if (ShinkIn.GetEnabled && !string.IsNullOrEmpty(megaLinks))
                 {
                     var allLinks = megaLinks.Split(new string[] { "\\n" }, StringSplitOptions.None);
                     var firstLine = true;
@@ -372,20 +368,7 @@ namespace SharingWorker
                     }
                     megaLinks = sb.ToString().TrimEnd("\\n".ToCharArray());
                 }
-                else if (!isCensored && ShinkIn.GetEnabled && !string.IsNullOrEmpty(megaLinks))
-                {
-                    var allLinks = megaLinks.Split(new string[] { "\\n" }, StringSplitOptions.None);
-                    var sb = new StringBuilder();
-                    foreach (var link in allLinks)
-                    {
-                        var shinkLink = await ShinkIn.GetLink(link);
-                        if (string.IsNullOrEmpty(shinkLink) || shinkLink.Length > 30)
-                            shinkLink = link;
-
-                        sb.Append(string.Format("{0}\\n", shinkLink));                       
-                    }
-                    megaLinks = sb.ToString().TrimEnd("\\n".ToCharArray());
-                }
+                
 
                 string links1 = null, links2 = null;
                 switch (rnd.Next(0, 1000)%2)

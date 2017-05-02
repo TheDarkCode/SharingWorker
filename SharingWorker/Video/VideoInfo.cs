@@ -879,12 +879,12 @@ namespace SharingWorker.Video
                         var response = await client.GetByteArrayAsync(url);
                         var responseString = Encoding.GetEncoding("euc-jp").GetString(response, 0, response.Length - 1);
 
-                        var search = "エッチな0930 ";
+                        var search = "<h1><span class=\"style1\">";
                         var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
                         if (start >= 0)
                         {
                             start = start + search.Length;
-                            var end = responseString.IndexOf("</title>", start, StringComparison.Ordinal);
+                            var end = responseString.IndexOf("</span></h1>", start, StringComparison.Ordinal);
                             if (end >= 0)
                             {
                                 ret.Actresses = responseString.Substring(start, end - start);
@@ -915,12 +915,12 @@ namespace SharingWorker.Video
                         var response = await client.GetByteArrayAsync(url);
                         var responseString = Encoding.GetEncoding("euc-jp").GetString(response, 0, response.Length - 1);
 
-                        var search = "＠エッチな4610 ";
+                        var search = "<h1><span class=\"style1\">";
                         var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
                         if (start >= 0)
                         {
                             start = start + search.Length;
-                            var end = responseString.IndexOf("</title>", start, StringComparison.Ordinal);
+                            var end = responseString.IndexOf("</span></h1>", start, StringComparison.Ordinal);
                             if (end >= 0)
                             {
                                 ret.Actresses = responseString.Substring(start, end - start);
@@ -951,12 +951,12 @@ namespace SharingWorker.Video
                         var response = await client.GetByteArrayAsync(url);
                         var responseString = Encoding.GetEncoding("euc-jp").GetString(response, 0, response.Length - 1);
 
-                        var search = "＠人妻斬り ";
+                        var search = "<h1><span class=\"style1\">";
                         var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
                         if (start >= 0)
                         {
                             start = start + search.Length;
-                            var end = responseString.IndexOf("</title>", start, StringComparison.Ordinal);
+                            var end = responseString.IndexOf("</span></h1>", start, StringComparison.Ordinal);
                             if (end >= 0)
                             {
                                 ret.Actresses = responseString.Substring(start, end - start);
@@ -1356,6 +1356,7 @@ namespace SharingWorker.Video
                             end = responseString.IndexOf("</h1>", start, StringComparison.OrdinalIgnoreCase);
 
                             var title = responseString.Substring(start, end - start).TrimStart('\n').TrimEnd(' ');
+                            title = System.Web.HttpUtility.HtmlDecode(title);
                             ret.Actresses = string.Empty;
                             ret.Title = string.Format("[LegalPorno]{0}", title);
                         }
