@@ -29,6 +29,7 @@ namespace SharingWorker.FileHost
                             await client.GetAsync(string.Format("{0}{1}", singleApiUrl, HttpUtility.UrlEncode(link))))
                     {
                         var result = await response.Content.ReadAsStringAsync();
+                        if (result.Length > 40) result = string.Empty;
                         return result;
                     }
                 }

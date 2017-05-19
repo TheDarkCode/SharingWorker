@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using NLog;
@@ -29,7 +26,9 @@ namespace SharingWorker.FileHost
                             await client.GetAsync(string.Format("{0}{1}", apiUrl, HttpUtility.UrlEncode(link))))
                     {
                         var result = await response.Content.ReadAsStringAsync();
-                        return result.TrimStart(Environment.NewLine.ToCharArray());
+                        result = result.TrimStart(Environment.NewLine.ToCharArray());
+                        if (result.Length > 40) result = string.Empty;
+                        return result;
                     }
                 }
             }
