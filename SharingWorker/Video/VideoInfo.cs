@@ -184,6 +184,10 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_LP(id, lang);
                 }
+                if (id.StartsWith("BZ_"))
+                {
+                    return await WesternInfo.GetBrazzers(id);
+                }
 
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
                 {

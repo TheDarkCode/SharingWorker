@@ -249,6 +249,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
     <Compile Include="UploadInfo.cs" />
+    <Compile Include="Video\WesternInfo.cs" />
     <Page Include="Video\RarListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
