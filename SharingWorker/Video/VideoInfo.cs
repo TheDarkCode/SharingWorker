@@ -188,6 +188,10 @@ namespace SharingWorker.Video
                 {
                     return await WesternInfo.GetBrazzers(id);
                 }
+                if (id.StartsWith("21Naturals_") || id.StartsWith("21naturals_"))
+                {
+                    return await WesternInfo.Get21Naturals(id);
+                }
 
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
                 {
