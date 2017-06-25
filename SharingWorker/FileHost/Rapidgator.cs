@@ -5,7 +5,6 @@ using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SharingWorker.FileHost
@@ -56,7 +55,7 @@ namespace SharingWorker.FileHost
             }
         }
 
-        public static async Task<List<string>> GetLinks(string filename)
+        public static async Task<List<string>> GetLinks(string filename, bool withFileName = false)
         {
             try
             {
@@ -88,13 +87,21 @@ namespace SharingWorker.FileHost
                             var end = result.IndexOf(",", start, StringComparison.Ordinal);
                             var id = result.Substring(start, end - start);
 
-                            var findName = "name&gt;";
-                            start = result.IndexOf(findName, end, StringComparison.Ordinal);
-                            start = start + findName.Length;
-                            end = result.IndexOf(",", start, StringComparison.Ordinal);
-                            var name = result.Substring(start, end - start);
+                            string link;
+                            if (withFileName)
+                            {
+                                var findName = "name&gt;";
+                                start = result.IndexOf(findName, end, StringComparison.Ordinal);
+                                start = start + findName.Length;
+                                end = result.IndexOf(",", start, StringComparison.Ordinal);
+                                var name = result.Substring(start, end - start);
 
-                            var link = string.Format("http://rapidgator.net/file/{0}/{1}.html", id, name);
+                                link = string.Format("http://rapidgator.net/file/{0}/{1}.html", id, name);
+                            }
+                            else
+                            {
+                                link = string.Format("http://rapidgator.net/file/{0}", id);
+                            }
                             links.Add(link);
                         }
                         return links;
