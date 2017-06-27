@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace SharingWorker.Video
@@ -188,9 +189,26 @@ namespace SharingWorker.Video
                 {
                     return await WesternInfo.GetBrazzers(id);
                 }
-                if (id.StartsWith("21Naturals_") || id.StartsWith("21naturals_"))
+                if (id.StartsWith("21Naturals_") || id.StartsWith("21naturals_") ||
+                    id.StartsWith("21Sextury_") || id.StartsWith("21sextury_"))
                 {
-                    return await WesternInfo.Get21Naturals(id);
+                    return await WesternInfo.Get21Members(id);
+                }
+                if (id.StartsWith("KINK_"))
+                {
+                    return await WesternInfo.GetKINK(id);
+                }
+                if (id.StartsWith("NA_"))
+                {
+                    return await WesternInfo.GetNaughtyAmerica(id);
+                }
+                if (id.StartsWith("TUSHY_"))
+                {
+                    return await WesternInfo.GetTUSHY(id);
+                }
+                if (id.StartsWith("phd_"))
+                {
+                    return await WesternInfo.GetPassionHD(id);
                 }
 
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
@@ -641,7 +659,7 @@ namespace SharingWorker.Video
                             if (end >= 0)
                             {
                                 end--;
-                                ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+                                ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
 
                                 start = responseString.IndexOf("名前:", end, StringComparison.Ordinal);
                                 if (start < 0) return ret;
