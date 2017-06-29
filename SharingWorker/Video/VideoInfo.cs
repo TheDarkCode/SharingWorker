@@ -181,34 +181,9 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_FC2(id, lang);
                 }
-                if (id.StartsWith("lp_"))
+                if (WesternInfo.IsWestern(id))
                 {
-                    return await GetVideoInfo_LP(id, lang);
-                }
-                if (id.StartsWith("BZ_"))
-                {
-                    return await WesternInfo.GetBrazzers(id);
-                }
-                if (id.StartsWith("21Naturals_") || id.StartsWith("21naturals_") ||
-                    id.StartsWith("21Sextury_") || id.StartsWith("21sextury_"))
-                {
-                    return await WesternInfo.Get21Members(id);
-                }
-                if (id.StartsWith("KINK_"))
-                {
-                    return await WesternInfo.GetKINK(id);
-                }
-                if (id.StartsWith("NA_"))
-                {
-                    return await WesternInfo.GetNaughtyAmerica(id);
-                }
-                if (id.StartsWith("TUSHY_"))
-                {
-                    return await WesternInfo.GetTUSHY(id);
-                }
-                if (id.StartsWith("phd_"))
-                {
-                    return await WesternInfo.GetPassionHD(id);
+                    return await WesternInfo.GetInfo(id);
                 }
 
                 if (char.IsDigit(id, 0) || id.Contains("XXX-AV"))
@@ -1343,51 +1318,6 @@ namespace SharingWorker.Video
                     break;
                 case QueryLang.EN:
                     break;
-            }
-            return ret;
-        }
-
-        public static async Task<VideoInfo> GetVideoInfo_LP(string id, QueryLang lang)
-        {
-            var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
-            var num = id.Replace("lp_", string.Empty);
-
-            url = string.Format("https://www.legalporno.com/search/?query={0}", num);
-            using (var handler = new HttpClientHandler())
-            using (var client = new HttpClient(handler))
-            {
-                var responseString = await client.GetStringAsync(url);
-
-                var search = "<div class='thumbnail-image'>";
-                var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
-                if (start >= 0)
-                {
-                    search = "<a href='";
-                    start = responseString.IndexOf(search, start, StringComparison.OrdinalIgnoreCase);
-
-                    start = start + search.Length;
-                    var end = responseString.IndexOf("'", start, StringComparison.OrdinalIgnoreCase);
-                    if (end >= 0)
-                    {
-                        var videoUrl = responseString.Substring(start, end - start);
-                        if (!videoUrl.StartsWith("http")) return ret;
-
-                        responseString = await client.GetStringAsync(videoUrl);
-                        search = "<h1 class='watchpage-title'>";
-                        start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
-                        if (start >= 0)
-                        {
-                            start = start + search.Length;
-                            end = responseString.IndexOf("</h1>", start, StringComparison.OrdinalIgnoreCase);
-
-                            var title = responseString.Substring(start, end - start).TrimStart('\n').TrimEnd(' ');
-                            title = System.Web.HttpUtility.HtmlDecode(title);
-                            ret.Actresses = string.Empty;
-                            ret.Title = string.Format("[LegalPorno]{0}", title);
-                        }
-                    }
-                }
             }
             return ret;
         }

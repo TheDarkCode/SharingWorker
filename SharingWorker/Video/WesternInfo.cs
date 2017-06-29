@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +10,77 @@ namespace SharingWorker.Video
 {
     static class WesternInfo
     {
+        private static Dictionary<string, Func<string, Task<VideoInfo>>> westernTasks = new Dictionary<string, Func<string, Task<VideoInfo>>>()
+        {
+            { "lp_", GetLegalPorno },
+            { "BZ_", GetBrazzers },
+            { "21Naturals_", Get21Members },
+            { "21naturals_", Get21Members },
+            { "21Sextury_", Get21Members },
+            { "21sextury_", Get21Members },
+            { "KINK_", GetKINK },
+            { "NA_", GetNaughtyAmerica },
+            { "TUSHY_", GetTUSHY },
+            { "phd_", GetPassionHD },
+            { "RK_", GetPassionHD },
+        };
+
+        public static bool IsWestern(string id)
+        {
+            return westernTasks.Keys.Any(id.StartsWith);
+        }
+
+        public static async Task<VideoInfo> GetInfo(string id)
+        {
+            var task = westernTasks.First(p => id.StartsWith(p.Key)).Value;
+            return await task(id);
+        }
+
+        public static async Task<VideoInfo> GetLegalPorno(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("lp_", string.Empty);
+
+            url = string.Format("https://www.legalporno.com/search/?query={0}", num);
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var responseString = await client.GetStringAsync(url);
+
+                var search = "<div class='thumbnail-image'>";
+                var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                if (start >= 0)
+                {
+                    search = "<a href='";
+                    start = responseString.IndexOf(search, start, StringComparison.OrdinalIgnoreCase);
+
+                    start = start + search.Length;
+                    var end = responseString.IndexOf("'", start, StringComparison.OrdinalIgnoreCase);
+                    if (end >= 0)
+                    {
+                        var videoUrl = responseString.Substring(start, end - start);
+                        if (!videoUrl.StartsWith("http")) return ret;
+
+                        responseString = await client.GetStringAsync(videoUrl);
+                        search = "<h1 class='watchpage-title'>";
+                        start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            end = responseString.IndexOf("</h1>", start, StringComparison.OrdinalIgnoreCase);
+
+                            var title = responseString.Substring(start, end - start).TrimStart('\n').TrimEnd(' ');
+                            title = System.Web.HttpUtility.HtmlDecode(title);
+                            ret.Actresses = string.Empty;
+                            ret.Title = string.Format("[LegalPorno]{0}", title);
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+
         public static async Task<VideoInfo> GetBrazzers(string id)
         {
             var url = string.Empty;
@@ -232,6 +305,50 @@ namespace SharingWorker.Video
                         end = responseString.IndexOf(" updated on", start, StringComparison.Ordinal);
                         ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
                         ret.Title = string.Format("[passion-hd] {0} - {1}", ret.Title, ret.Actresses);
+                    }
+                }
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetRealityKings(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("RK_", string.Empty);
+
+            url = string.Format("http://www.realitykings.com/tour/video/watch/{0}", num);
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var response = await client.GetByteArrayAsync(url);
+                var responseString = Encoding.UTF8.GetString(response, 0, response.Length - 1);
+
+                var search = "<title>";
+                var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                if (start >= 0)
+                {
+                    start = start + search.Length;
+                    var end = responseString.IndexOf(" - The Official", start, StringComparison.Ordinal);
+                    if (end >= 0)
+                    {
+                        ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+                        start = responseString.IndexOf("<h4>", end, StringComparison.Ordinal);
+                        end = responseString.IndexOf("</h4>", start, StringComparison.Ordinal);
+
+                        var namesStr = responseString.Substring(start, end - start);
+                        search = "\">";
+                        foreach (var nameStart in namesStr.AllIndexesOf(search))
+                        {
+                            var aStart = nameStart + search.Length;
+                            var aEnd = namesStr.IndexOf("</a>", nameStart, StringComparison.Ordinal);
+                            var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
+                            ret.Actresses += string.Format("{0}, ", actress);
+                        }
+                        if (ret.Actresses != null)
+                            ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+                        ret.Title = string.Format("[RealityKings] {0} - {1}", ret.Title, ret.Actresses);
                     }
                 }
             }

@@ -259,7 +259,7 @@ namespace SharingWorker
             var title = id;
             if (((char.IsDigit(id, 0) && !id.StartsWith("00")) || id.Contains("heyzo") || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV")
                 || id.Contains("H0930") || id.Contains("h0930") || id.Contains("H4610") || id.Contains("h4610") || id.Contains("C0930") || id.Contains("c0930")
-                || id.Contains("heydouga") || id.Contains("av-sikou") || id.Contains("fc2-ppv") || id.StartsWith("lp_"))
+                || id.Contains("heydouga") || id.Contains("av-sikou") || id.Contains("fc2-ppv") || WesternInfo.IsWestern(id))
                 && !id.Contains("200GANA") && !id.Contains("259LUXU") && !id.Contains("215LES") && !id.Contains("261ARA"))
             {
                 isCensored = false;
