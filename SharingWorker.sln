@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharingWorker", "SharingWorker\SharingWorker.csproj", "{EF465094-D4BC-4FF4-ADF4-E51B12CF8002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WesternInfoTest", "WesternInfoTest\WesternInfoTest.csproj", "{44B51339-C7E5-43F5-8E0C-2B1B4F6A5434}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{EF465094-D4BC-4FF4-ADF4-E51B12CF8002}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF465094-D4BC-4FF4-ADF4-E51B12CF8002}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF465094-D4BC-4FF4-ADF4-E51B12CF8002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44B51339-C7E5-43F5-8E0C-2B1B4F6A5434}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44B51339-C7E5-43F5-8E0C-2B1B4F6A5434}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44B51339-C7E5-43F5-8E0C-2B1B4F6A5434}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44B51339-C7E5-43F5-8E0C-2B1B4F6A5434}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -22,7 +22,11 @@ namespace SharingWorker.Video
             { "NA_", GetNaughtyAmerica },
             { "TUSHY_", GetTUSHY },
             { "phd_", GetPassionHD },
-            { "RK_", GetPassionHD },
+            { "RK_", GetRealityKings },
+            { "Babes_", GetBabes },
+            { "ZTOD_", GetZTOD },
+            { "HX_", GetHardX },
+            { "MOFOS_", GetMOFOS },
         };
 
         public static bool IsWestern(string id)
@@ -349,6 +353,230 @@ namespace SharingWorker.Video
                             ret.Actresses = ret.Actresses.RemoveEnd(", ");
 
                         ret.Title = string.Format("[RealityKings] {0} - {1}", ret.Title, ret.Actresses);
+                    }
+                }
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetBabes(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("Babes_", string.Empty);
+
+            url = string.Format("https://www.babes.com/tour/videos/view/id/{0}", num);
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var response = await client.GetByteArrayAsync(url);
+                var responseString = Encoding.UTF8.GetString(response, 0, response.Length - 1);
+
+                var search = "<h1>";
+                var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                if (start >= 0)
+                {
+                    start = start + search.Length;
+                    var end = responseString.IndexOf("</h1>", start, StringComparison.Ordinal);
+                    if (end >= 0)
+                    {
+                        ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
+                        search = "<h2 class=\"video-bar__models\">";
+                        start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                        start += search.Length;
+                        end = responseString.IndexOf("</h2>", start, StringComparison.Ordinal);
+
+                        var namesStr = responseString.Substring(start, end - start);
+                        search = "\">";
+                        foreach (var nameStart in namesStr.AllIndexesOf(search))
+                        {
+                            var aStart = nameStart + search.Length;
+                            var aEnd = namesStr.IndexOf("</a>", nameStart, StringComparison.Ordinal);
+                            var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
+                            ret.Actresses += string.Format("{0}, ", HttpUtility.HtmlDecode(actress));
+                        }
+                        if (ret.Actresses != null)
+                            ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+                        ret.Title = string.Format("[Babes] {0} - {1}", ret.Title, ret.Actresses);
+                    }
+                }
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetZTOD(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("ZTOD_", string.Empty);
+
+            url = string.Format("http://www.ztod.com/videos/{0}", num);
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var response = await client.GetByteArrayAsync(url);
+                var responseString = Encoding.UTF8.GetString(response, 0, response.Length - 1);
+
+                var search = "<title>";
+                var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+
+                if (start >= 0)
+                {
+                    start = start + search.Length;
+                    var end = responseString.IndexOf(" Featuring", start, StringComparison.Ordinal);
+
+                    if (end < 0)
+                    {
+                        response = await client.GetByteArrayAsync(url);
+                        responseString = Encoding.UTF8.GetString(response, 0, response.Length - 1);
+                        start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            end = responseString.IndexOf(" Featuring", start, StringComparison.Ordinal);
+                        }
+                    }
+
+                    if (end >= 0)
+                    {
+                        ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
+                        search = "Pornstars:<span class=\"txt-highlight\">";
+                        start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                        start += search.Length;
+                        end = responseString.IndexOf("</span>", start, StringComparison.Ordinal);
+
+                        var namesStr = responseString.Substring(start, end - start);
+                        search = "\">";
+                        foreach (var nameStart in namesStr.AllIndexesOf(search))
+                        {
+                            var aStart = nameStart + search.Length;
+                            var aEnd = namesStr.IndexOf("</a>", nameStart, StringComparison.Ordinal);
+                            var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
+                            ret.Actresses += string.Format("{0}, ", HttpUtility.HtmlDecode(actress));
+                        }
+                        if (ret.Actresses != null)
+                            ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+                        ret.Title = string.Format("[ZTOD] {0}", ret.Title);
+                    }
+                }
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetHardX(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("HX_", string.Empty);
+
+            url = string.Format("http://www.hardx.com/en/search/{0}?query={0}", num);
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var responseString = await client.GetStringAsync(url);
+
+                var search = "<div class=\"tlcTitle\">";
+                var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                if (start >= 0)
+                {
+                    search = "href=\"";
+                    start = responseString.IndexOf(search, start, StringComparison.OrdinalIgnoreCase);
+
+                    start = start + search.Length;
+                    var end = responseString.IndexOf("\"", start, StringComparison.OrdinalIgnoreCase);
+                    if (end >= 0)
+                    {
+                        var videoUrl = responseString.Substring(start, end - start);
+                        if (!videoUrl.StartsWith("/en/video/")) return ret;
+                        videoUrl = string.Format("http://www.hardx.com{0}", videoUrl);
+
+                        responseString = await client.GetStringAsync(videoUrl);
+                        search = "<h1 class=\"title\">";
+                        start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            end = responseString.IndexOf("</h1>", start, StringComparison.OrdinalIgnoreCase);
+                            var title = HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
+
+                            search = "<ul class=\"actorList\">";
+                            start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                            start += search.Length;
+                            end = responseString.IndexOf("</ul>", start, StringComparison.Ordinal);
+
+                            var namesStr = responseString.Substring(start, end - start);
+                            search = "<strong>";
+                            foreach (var nameStart in namesStr.AllIndexesOf(search))
+                            {
+                                var aStart = nameStart + search.Length;
+                                var aEnd = namesStr.IndexOf("</strong>", nameStart, StringComparison.Ordinal);
+                                var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
+                                ret.Actresses += string.Format("{0}, ", HttpUtility.HtmlDecode(actress));
+                            }
+                            if (ret.Actresses != null)
+                                ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+
+                            ret.Title = string.Format("[HardX] {0} - {1}", title, ret.Actresses);
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetMOFOS(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("MOFOS_", string.Empty);
+
+            url = string.Format("https://www.mofos.com/tour/search/?q={0}", num);
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var responseString = await client.GetStringAsync(url);
+
+                var search = string.Format("/tour/scene/{0}", num);
+                var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                if (start >= 0)
+                {
+                    var end = responseString.IndexOf("\"", start, StringComparison.OrdinalIgnoreCase);
+                    if (end >= 0)
+                    {
+                        var videoUrl = responseString.Substring(start, end - start);
+                        videoUrl = string.Format("https://www.mofos.com{0}", videoUrl);
+
+                        responseString = await client.GetStringAsync(videoUrl);
+                        search = "<h1 class=\"title\">";
+                        start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                        if (start >= 0)
+                        {
+                            start = start + search.Length;
+                            end = responseString.IndexOf("</h1>", start, StringComparison.OrdinalIgnoreCase);
+                            var title = HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
+
+                            search = "<h2>";
+                            start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                            start += search.Length;
+                            end = responseString.IndexOf("</h2>", start, StringComparison.Ordinal);
+
+                            var namesStr = responseString.Substring(start, end - start);
+                            search = "<a title=\"Watch ";
+                            foreach (var nameStart in namesStr.AllIndexesOf(search))
+                            {
+                                var aStart = nameStart + search.Length;
+                                var aEnd = namesStr.IndexOf(" Profile", nameStart, StringComparison.Ordinal);
+                                var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
+                                ret.Actresses += string.Format("{0}, ", HttpUtility.HtmlDecode(actress));
+                            }
+                            if (ret.Actresses != null)
+                                ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+                            ret.Title = string.Format("[MOFOS] {0} - {1}", title, ret.Actresses);
+                        }
                     }
                 }
             }
