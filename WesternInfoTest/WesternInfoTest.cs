@@ -28,5 +28,17 @@ namespace WesternInfoTest
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestTeamSkeet()
+        {
+            var info = await WesternInfo.GetTeamSkeet("TS_tickets_to_the_ass");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetTeamSkeet("TS_anal_seduction");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
