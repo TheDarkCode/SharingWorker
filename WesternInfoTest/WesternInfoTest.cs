@@ -40,5 +40,17 @@ namespace WesternInfoTest
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestHOLED()
+        {
+            var info = await WesternInfo.GetHOLED("HOLED_blonde-teen-gape");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetHOLED("HOLED_best-friends-anal");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
