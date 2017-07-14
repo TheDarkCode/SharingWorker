@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -30,6 +31,8 @@ namespace SharingWorker.Video
             { "TS_", GetTeamSkeet },
             { "HOLED_", GetHOLED },
             { "TE_", GetTeenErotica },
+            { "JJ_", GetJulesJordan },
+            { "JJV_", GetJulesJordanVideo },
         };
 
         public static bool IsWestern(string id)
@@ -726,6 +729,96 @@ namespace SharingWorker.Video
                         ret.Actresses = ret.Actresses.RemoveEnd(", ");
 
                     ret.Title = string.Format("[TeenErotica] {0} - {1}", title, ret.Actresses);
+                }
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetJulesJordan(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("JJ_", string.Empty);
+            var queryStr = new StringBuilder();
+            for (var i = 0; i < num.Length; i++)
+            {
+                if (i > 0 && char.IsUpper(num[i])) queryStr.Append(" ");
+                queryStr.Append(num[i]);
+            }
+
+            url = string.Format("https://www.julesjordan.com/trial/search.php?query={0}", HttpUtility.UrlEncode(queryStr.ToString()));
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var responseString = await client.GetStringAsync(url);
+                var search = "<!-- Title -->";
+                var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                if (start >= 0)
+                {
+                    start += search.Length;
+                    search = "\">";
+                    start = responseString.IndexOf(search, start, StringComparison.OrdinalIgnoreCase);
+                    start += search.Length;
+                    var end = responseString.IndexOf("</a>", start, StringComparison.OrdinalIgnoreCase);
+                    var title = HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
+
+                    search = "<span class=\"update_models\">";
+                    start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                    start += search.Length;
+                    end = responseString.IndexOf("</span>", start, StringComparison.Ordinal);
+
+                    var namesStr = responseString.Substring(start, end - start);
+                    search = "\">";
+                    foreach (var nameStart in namesStr.AllIndexesOf(search))
+                    {
+                        var aStart = nameStart + search.Length;
+                        var aEnd = namesStr.IndexOf("</a>", nameStart, StringComparison.Ordinal);
+                        var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
+                        ret.Actresses += string.Format("{0}, ", actress);
+                    }
+                    if (ret.Actresses != null)
+                        ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+                    ret.Title = string.Format("[JulesJordan] {0}", title);
+                }
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetJulesJordanVideo(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var nums = id.Replace("JJV_", string.Empty).Split('_');
+            if (nums.Count() < 2) return ret;
+
+            var queryStr = nums[0];
+            var actStr = new StringBuilder();
+            for (var i = 0; i < nums[1].Length; i++)
+            {
+                if (i > 0 && char.IsUpper(nums[1][i])) actStr.Append(" ");
+                actStr.Append(nums[1][i]);
+            }
+            ret.Actresses = actStr.ToString();
+
+            url = string.Format("http://www.julesjordanvideo.com/movie/{0}/index.html", queryStr);
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var response = await client.GetByteArrayAsync(url);
+                var responseString = Encoding.UTF8.GetString(response, 0, response.Length - 1);
+
+                var search = "<strong>";
+                var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                if (start >= 0)
+                {
+                    start = start + search.Length;
+                    var end = responseString.IndexOf("</strong>", start, StringComparison.Ordinal);
+                    if (end >= 0)
+                    {
+                        ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+                        ret.Title = string.Format("[JulesJordan] {0} - {1}", ret.Title, ret.Actresses);
+                    }
                 }
             }
             return ret;

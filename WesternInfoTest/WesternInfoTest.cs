@@ -61,5 +61,26 @@ namespace WesternInfoTest
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestJulesJordan()
+        {
+            var info = await WesternInfo.GetJulesJordan("JJ_TeenAssIsOpen");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetJulesJordan("JJ_ThisRussianHacks");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
+
+        [TestMethod]
+        public async Task TestJulesJordanVideo()
+        {
+            var info = await WesternInfo.GetJulesJordanVideo("JJV_874_EllaNova");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
