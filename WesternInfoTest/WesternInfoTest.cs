@@ -82,5 +82,17 @@ namespace WesternInfoTest
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestSPYFAM()
+        {
+            var info = await WesternInfo.GetSPYFAM("SPYFAM_dad-busy-watching-game-step-siblings-busy-fucking");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetSPYFAM("SPYFAM_step-brother-blackmails-lesbian-step-sister-to-do-3-some");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
