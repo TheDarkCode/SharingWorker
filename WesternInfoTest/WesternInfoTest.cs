@@ -94,5 +94,17 @@ namespace WesternInfoTest
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestNubileFilms()
+        {
+            var info = await WesternInfo.GetNubileFilms("NubileFilms_45652");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetNubileFilms("NubileFilms_45640");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
