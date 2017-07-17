@@ -106,5 +106,17 @@ namespace WesternInfoTest
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestEvilAngel()
+        {
+            var info = await WesternInfo.GetEvilAngel("EA_126041");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetEvilAngel("EA_126051");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
