@@ -118,5 +118,17 @@ namespace WesternInfoTest
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestNaughtyAmerica()
+        {
+            var info = await WesternInfo.GetNaughtyAmerica("NA_lexi-lovell-22971");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetNaughtyAmerica("NA_brett-rossi-stella-cox-21573");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }

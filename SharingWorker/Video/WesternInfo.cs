@@ -235,11 +235,26 @@ namespace SharingWorker.Video
                     var end = responseString.IndexOf(search, start, StringComparison.Ordinal);
                     if (end >= 0)
                     {
-                        ret.Actresses = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
                         start = end + search.Length;
                         end = responseString.IndexOf(" -", start, StringComparison.Ordinal);
                         ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
-                        
+
+                        start = responseString.IndexOf("<h1>", end, StringComparison.Ordinal);
+                        end = responseString.IndexOf("</h1>", start, StringComparison.Ordinal);
+
+                        var namesStr = responseString.Substring(start, end - start);
+                        search = "\">";
+                        foreach (var nameStart in namesStr.AllIndexesOf(search))
+                        {
+                            var aStart = nameStart + search.Length;
+                            var aEnd = namesStr.IndexOf("</a>", nameStart, StringComparison.Ordinal);
+                            var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
+                            ret.Actresses += string.Format("{0}, ", actress);
+                        }
+                        if (ret.Actresses != null)
+                            ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+
                         ret.Title = string.Format("[NaughtyAmerica] {0} - {1}", ret.Title, ret.Actresses);
                     }
                 }
