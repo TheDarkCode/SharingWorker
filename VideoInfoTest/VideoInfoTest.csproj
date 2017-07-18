@@ -7,8 +7,8 @@
     <ProjectGuid>{44B51339-C7E5-43F5-8E0C-2B1B4F6A5434}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WesternInfoTest</RootNamespace>
-    <AssemblyName>WesternInfoTest</AssemblyName>
+    <RootNamespace>VideoInfoTest</RootNamespace>
+    <AssemblyName>VideoInfoTest</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -48,6 +48,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="VideoInfoTest.cs" />
     <Compile Include="WesternInfoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharingWorker.Video;
 
-namespace WesternInfoTest
+namespace VideoInfoTest
 {
     [TestClass]
     public class WesternInfoTest

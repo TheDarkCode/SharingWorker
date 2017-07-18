@@ -181,6 +181,10 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_FC2(id, lang);
                 }
+                if (RealStreetAngels.IsRealStreetAngels(id))
+                {
+                    return await RealStreetAngels.GetInfo(id);
+                }
                 if (WesternInfo.IsWestern(id))
                 {
                     return await WesternInfo.GetInfo(id);
