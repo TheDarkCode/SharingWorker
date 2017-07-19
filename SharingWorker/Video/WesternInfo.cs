@@ -38,7 +38,7 @@ namespace SharingWorker.Video
             { "EA_", GetEvilAngel },
         };
 
-        public static bool IsWestern(string id)
+        public static bool Match(string id)
         {
             return westernTasks.Keys.Any(id.StartsWith);
         }

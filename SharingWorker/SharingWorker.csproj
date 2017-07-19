@@ -226,6 +226,7 @@
     <Compile Include="MahDialog.cs" />
     <Compile Include="MahWindowManager.cs" />
     <Compile Include="Video\RealStreetAngels.cs" />
+    <Compile Include="Video\SiroutoDouga.cs" />
     <Compile Include="Video\VideoCover.cs" />
     <Compile Include="Video\VideoInfo.cs" />
     <Compile Include="Video\VideoUtil.cs" />

@@ -161,18 +161,6 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_1000giri(id, lang);
                 }
-                if (id.StartsWith("SIRO-"))
-                {
-                    return await GetVideoInfo_SIRO(id, lang);
-                }
-                if (id.StartsWith("200GANA-"))
-                {
-                    return await GetVideoInfo_200GANA(id, lang);
-                }
-                if (id.StartsWith("259LUXU-"))
-                {
-                    return await GetVideoInfo_259LUXU(id, lang);
-                }
                 if (id.StartsWith("PGM_") || id.StartsWith("pgm_"))
                 {
                     return await GetVideoInfo_PGM(id, lang);
@@ -181,11 +169,15 @@ namespace SharingWorker.Video
                 {
                     return await GetVideoInfo_FC2(id, lang);
                 }
-                if (RealStreetAngels.IsRealStreetAngels(id))
+                if (SiroutoDouga.Match(id))
+                {
+                    return await SiroutoDouga.GetInfo(id);
+                }
+                if (RealStreetAngels.Match(id))
                 {
                     return await RealStreetAngels.GetInfo(id);
                 }
-                if (WesternInfo.IsWestern(id))
+                if (WesternInfo.Match(id))
                 {
                     return await WesternInfo.GetInfo(id);
                 }
@@ -1100,148 +1092,7 @@ namespace SharingWorker.Video
             }
             return ret;
         }
-
-        public static async Task<VideoInfo> GetVideoInfo_SIRO(string id, QueryLang lang)
-        {
-            var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
-            var num = id.Replace("SIRO-", string.Empty);
-
-            switch (lang)
-            {
-                case QueryLang.TW:
-                    url = string.Format("http://sirouto-douga.1000.tv/siro{0}.php", num);
-                    using (var handler = new HttpClientHandler())
-                    using (var client = new HttpClient(handler))
-                    {
-                        var responseString = await client.GetStringAsync(url);
-
-                        var bytes = Encoding.UTF8.GetBytes("タイトル：");
-                        var search = Encoding.UTF8.GetString(bytes);
-
-                        var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
-                        if (start >= 0)
-                        {
-                            start = start + search.Length;
-                            var end = responseString.IndexOf("</li>", start, StringComparison.OrdinalIgnoreCase);
-                            if (end >= 0)
-                            {
-                                var title = responseString.Substring(start, end - start);
-
-                                bytes = Encoding.UTF8.GetBytes("出演者：");
-                                search = Encoding.UTF8.GetString(bytes);
-                                start = responseString.IndexOf(search, end, StringComparison.Ordinal);
-                                if (start >= 0)
-                                {
-                                    start = start + search.Length;
-                                    end = responseString.IndexOf("</li>", start, StringComparison.Ordinal);
-                                    ret.Actresses = responseString.Substring(start, end - start);
-                                    ret.Title = string.Format("SIRO-{0} {1} {2}", num, title, ret.Actresses);
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case QueryLang.EN:
-                    break;
-            }
-            return ret;
-        }
-
-        public static async Task<VideoInfo> GetVideoInfo_200GANA(string id, QueryLang lang)
-        {
-            var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
-            var num = id.Replace("200GANA-", string.Empty);
-
-            switch (lang)
-            {
-                case QueryLang.TW:
-                    url = string.Format("http://sirouto-douga.1000.tv/gana{0}.php", num);
-                    using (var handler = new HttpClientHandler())
-                    using (var client = new HttpClient(handler))
-                    {
-                        var responseString = await client.GetStringAsync(url);
-
-                        var bytes = Encoding.UTF8.GetBytes("タイトル：");
-                        var search = Encoding.UTF8.GetString(bytes);
-
-                        var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
-                        if (start >= 0)
-                        {
-                            start = start + search.Length;
-                            var end = responseString.IndexOf("</li>", start, StringComparison.OrdinalIgnoreCase);
-                            if (end >= 0)
-                            {
-                                var title = responseString.Substring(start, end - start);
-
-                                bytes = Encoding.UTF8.GetBytes("出演者：");
-                                search = Encoding.UTF8.GetString(bytes);
-                                start = responseString.IndexOf(search, end, StringComparison.Ordinal);
-                                if (start >= 0)
-                                {
-                                    start = start + search.Length;
-                                    end = responseString.IndexOf("</li>", start, StringComparison.Ordinal);
-                                    ret.Actresses = responseString.Substring(start, end - start);
-                                    ret.Title = string.Format("200GANA-{0} {1} {2}", num, title, ret.Actresses);
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case QueryLang.EN:
-                    break;
-            }
-            return ret;
-        }
-
-        public static async Task<VideoInfo> GetVideoInfo_259LUXU(string id, QueryLang lang)
-        {
-            var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
-            var num = id.Replace("259LUXU-", string.Empty);
-
-            switch (lang)
-            {
-                case QueryLang.TW:
-                    url = string.Format("http://sirouto-douga.1000.tv/lux{0}.php", num);
-                    using (var handler = new HttpClientHandler())
-                    using (var client = new HttpClient(handler))
-                    {
-                        var responseString = await client.GetStringAsync(url);
-
-                        var bytes = Encoding.UTF8.GetBytes("タイトル：");
-                        var search = Encoding.UTF8.GetString(bytes);
-
-                        var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
-                        if (start >= 0)
-                        {
-                            start = start + search.Length;
-                            var end = responseString.IndexOf("</li>", start, StringComparison.OrdinalIgnoreCase);
-                            if (end >= 0)
-                            {
-                                var title = responseString.Substring(start, end - start);
-
-                                bytes = Encoding.UTF8.GetBytes("出演者：");
-                                search = Encoding.UTF8.GetString(bytes);
-                                start = responseString.IndexOf(search, end, StringComparison.Ordinal);
-                                if (start >= 0)
-                                {
-                                    start = start + search.Length;
-                                    end = responseString.IndexOf("</li>", start, StringComparison.Ordinal);
-                                    ret.Actresses = responseString.Substring(start, end - start);
-                                    ret.Title = string.Format("259LUXU-{0} {1} {2}", num, title, ret.Actresses);
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case QueryLang.EN:
-                    break;
-            }
-            return ret;
-        }
-
+        
         public static async Task<VideoInfo> GetVideoInfo_PGM(string id, QueryLang lang)
         {
             var url = string.Empty;

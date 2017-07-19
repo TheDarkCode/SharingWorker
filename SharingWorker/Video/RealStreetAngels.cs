@@ -9,7 +9,7 @@ namespace SharingWorker.Video
 {
     static class RealStreetAngels
     {
-        public static bool IsRealStreetAngels(string id)
+        public static bool Match(string id)
         {
             if (!id.StartsWith("m") || !id.Contains("_") || id.Length < 4 
                 || !char.IsDigit(id[1]) || !char.IsDigit(id[2]) || !char.IsDigit(id[3]))

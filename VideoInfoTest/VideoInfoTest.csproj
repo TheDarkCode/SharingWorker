@@ -48,6 +48,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SiroutoDougaTest.cs" />
     <Compile Include="VideoInfoTest.cs" />
     <Compile Include="WesternInfoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
