@@ -88,17 +88,17 @@ namespace SharingWorker.ImageHost
                 client.BaseAddress = new Uri(Url);
                 client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
                 client.DefaultRequestHeaders.ExpectContinue = false;
-                client.DefaultRequestHeaders.Referrer = new Uri("http://imgrock.net/login.html");
+                client.DefaultRequestHeaders.Referrer = new Uri("http://imgrock.co/login.html");
 
                 var content = new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("op", "login"),
-                    new KeyValuePair<string, string>("redirect", "http://imgrock.net/"),
+                    new KeyValuePair<string, string>("redirect", "http://imgrock.co/"),
                     new KeyValuePair<string, string>("login", User),
                     new KeyValuePair<string, string>("password", Password)
                 });
 
-                using (var response = await client.PostAsync("http://imgrock.net/", content))
+                using (var response = await client.PostAsync("http://imgrock.co/", content))
                 {
                     var result = await response.Content.ReadAsStringAsync();
                     if (result.IndexOf("logout", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -187,7 +187,7 @@ namespace SharingWorker.ImageHost
 
                             content.Add(new ByteArrayContent(Encoding.Default.GetBytes("Submit Query")), "\"Upload\"");
 
-                            if (string.IsNullOrEmpty(uploadServer)) uploadServer = "r01.imgrock.net";
+                            if (string.IsNullOrEmpty(uploadServer)) uploadServer = "r01.imgrock.co";
                             using (var message = await client.PostAsync(string.Format("http://{0}/cgi-bin/upload_flash.cgi", uploadServer), content))
                             {
                                 var response = await message.Content.ReadAsStringAsync();
