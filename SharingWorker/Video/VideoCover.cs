@@ -184,6 +184,11 @@ namespace SharingWorker.Video
                 fileName = fileName.Replace("259LUXU-", "lux");
                 return new List<string> { string.Format("http://sirouto-douga.1000.tv/img/capture/{0}/{0}_b0.jpg", fileName) };
             }
+            if (fileName.StartsWith("261ARA-"))
+            {
+                fileName = fileName.Replace("261ARA-", "ara");
+                return new List<string> { string.Format("http://sirouto-douga.1000.tv/img/capture/{0}/{0}_b0.jpg", fileName) };
+            }
 
             return new List<string> { await QueryDmmImage(fileName) };
         }

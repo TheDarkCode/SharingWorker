@@ -60,7 +60,8 @@ namespace SharingWorker.Video
                             start = start + search.Length;
                             end = responseString.IndexOf("</li>", start, StringComparison.Ordinal);
                             ret.Actresses = responseString.Substring(start, end - start);
-                            ret.Title = string.Format("{0}{1} {2} {3}", key, num, title, ret.Actresses);
+                            title = title.Contains(ret.Actresses) ? title : title + " " + ret.Actresses;
+                            ret.Title = string.Format("{0}{1} {2}", key, num, title);
                         }
                     }
                 }
