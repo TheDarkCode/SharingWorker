@@ -147,5 +147,17 @@ namespace VideoTest.Info
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestVIXEN()
+        {
+            var info = await WesternInfo.GetVIXEN("VIXEN_he-loves-my-big-butt");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetVIXEN("VIXEN_my-girlfriend-and-i-tried-a-threesome");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
