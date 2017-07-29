@@ -138,5 +138,14 @@ namespace VideoTest.Info
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestAnalized()
+        {
+            var info = await WesternInfo.GetAnalized("Analized_Zoey-Madelyn-Monroe-Part1");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
