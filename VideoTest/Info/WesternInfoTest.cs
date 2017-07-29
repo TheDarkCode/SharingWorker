@@ -1,12 +1,11 @@
-﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharingWorker.Video;
 
-namespace VideoInfoTest
+namespace VideoTest.Info
 {
-    [TestClass]
+    [TestClass, TestCategory("Western Info")]
     public class WesternInfoTest
     {
         [TestMethod]
@@ -126,6 +125,15 @@ namespace VideoInfoTest
             Trace.WriteLine(info.Title);
 
             info = await WesternInfo.GetNaughtyAmerica("NA_brett-rossi-stella-cox-21573");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
+
+        [TestMethod]
+        public async Task TestHardX()
+        {
+            var info = await WesternInfo.GetHardX("HX_121257");
             Trace.WriteLine(info.Title);
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));

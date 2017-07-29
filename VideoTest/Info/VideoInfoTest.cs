@@ -1,13 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using System.Text;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharingWorker.Video;
 
-namespace VideoInfoTest
+namespace VideoTest.Info
 {
-    [TestClass]
+    [TestClass, TestCategory("Video Info")]
     public class VideoInfoTest
     {
         [TestMethod]

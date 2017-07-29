@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Windows;
 using Newtonsoft.Json;
 using NLog;
 
@@ -47,7 +46,7 @@ namespace SharingWorker.Video
             });
         }
 
-        public static async Task<bool> GetCover(string fileName)
+        public static async Task<bool> DownloadCovers(string fileName)
         {
             for (int i = 0; i < 7; i++)
             {
@@ -68,7 +67,7 @@ namespace SharingWorker.Video
                 }
             }
             
-            var coverUrls = await GetCoverImageUrl(fileName);
+            var coverUrls = await GetCoverUrls(fileName);
             if (!coverUrls.Any()) return false;
 
             var ret = true;
@@ -101,7 +100,7 @@ namespace SharingWorker.Video
             return ret;
         }
 
-        public static async Task<List<string>> GetCoverImageUrl(string fileName)
+        public static async Task<List<string>> GetCoverUrls(string fileName)
         {
             if (fileName.Contains("caribpr"))
             {
@@ -169,27 +168,11 @@ namespace SharingWorker.Video
             {
                 return new List<string> { string.Format("http://www.1000giri.net/gallery/{0}/images/swf_f.jpg", fileName.Replace("1000giri-", string.Empty)) };
             }
-            if (fileName.StartsWith("SIRO-"))
+            if (SiroutoDouga.Match(fileName))
             {
-                fileName = fileName.Replace("-", string.Empty).ToLower();
-                return new List<string> { string.Format("http://sirouto-douga.1000.tv/img/capture/{0}/{0}_b0.jpg", fileName) };
+                return SiroutoDouga.GetCoverUrls(fileName);
             }
-            if (fileName.StartsWith("200GANA-"))
-            {
-                fileName = fileName.Replace("200GANA-", "gana");
-                return new List<string> { string.Format("http://sirouto-douga.1000.tv/img/capture/{0}/{0}_b0.jpg", fileName) };
-            }
-            if (fileName.StartsWith("259LUXU-"))
-            {
-                fileName = fileName.Replace("259LUXU-", "lux");
-                return new List<string> { string.Format("http://sirouto-douga.1000.tv/img/capture/{0}/{0}_b0.jpg", fileName) };
-            }
-            if (fileName.StartsWith("261ARA-"))
-            {
-                fileName = fileName.Replace("261ARA-", "ara");
-                return new List<string> { string.Format("http://sirouto-douga.1000.tv/img/capture/{0}/{0}_b0.jpg", fileName) };
-            }
-
+            
             return new List<string> { await QueryDmmImage(fileName) };
         }
 

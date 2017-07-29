@@ -46,7 +46,9 @@ namespace SharingWorker.Video
         public static async Task<VideoInfo> GetInfo(string id)
         {
             var task = westernTasks.First(p => id.StartsWith(p.Key)).Value;
-            return await task(id);
+            var info = await task(id);
+            info.HideId = true;
+            return info;
         }
 
         public static async Task<VideoInfo> GetLegalPorno(string id)
@@ -505,46 +507,36 @@ namespace SharingWorker.Video
                 var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
                 if (start >= 0)
                 {
-                    search = "href=\"";
+                    start += search.Length;
+                    search = "\">";
                     start = responseString.IndexOf(search, start, StringComparison.OrdinalIgnoreCase);
+                    start += search.Length;
 
-                    start = start + search.Length;
-                    var end = responseString.IndexOf("\"", start, StringComparison.OrdinalIgnoreCase);
+                    var end = responseString.IndexOf("</a>", start, StringComparison.OrdinalIgnoreCase);
                     if (end >= 0)
                     {
-                        var videoUrl = responseString.Substring(start, end - start);
-                        if (!videoUrl.StartsWith("/en/video/")) return ret;
-                        videoUrl = string.Format("http://www.hardx.com{0}", videoUrl);
+                        var title = HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
 
-                        responseString = await client.GetStringAsync(videoUrl);
-                        search = "<h1 class=\"title\">";
-                        start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
-                        if (start >= 0)
+                        search = "<div class=\"tlcActors\">";
+                        start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                        search = "</span>";
+                        start = responseString.IndexOf(search, start, StringComparison.Ordinal);
+                        start += search.Length;
+                        end = responseString.IndexOf("</div>", start, StringComparison.Ordinal);
+
+                        var namesStr = responseString.Substring(start, end - start);
+                        search = "\">";
+                        foreach (var nameStart in namesStr.AllIndexesOf(search))
                         {
-                            start = start + search.Length;
-                            end = responseString.IndexOf("</h1>", start, StringComparison.OrdinalIgnoreCase);
-                            var title = HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
-
-                            search = "<ul class=\"actorList\">";
-                            start = responseString.IndexOf(search, end, StringComparison.Ordinal);
-                            start += search.Length;
-                            end = responseString.IndexOf("</ul>", start, StringComparison.Ordinal);
-
-                            var namesStr = responseString.Substring(start, end - start);
-                            search = "<strong>";
-                            foreach (var nameStart in namesStr.AllIndexesOf(search))
-                            {
-                                var aStart = nameStart + search.Length;
-                                var aEnd = namesStr.IndexOf("</strong>", nameStart, StringComparison.Ordinal);
-                                var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
-                                ret.Actresses += string.Format("{0}, ", HttpUtility.HtmlDecode(actress));
-                            }
-                            if (ret.Actresses != null)
-                                ret.Actresses = ret.Actresses.RemoveEnd(", ");
-
-
-                            ret.Title = string.Format("[HardX] {0} - {1}", title, ret.Actresses);
+                            var aStart = nameStart + search.Length;
+                            var aEnd = namesStr.IndexOf("</a>", nameStart, StringComparison.Ordinal);
+                            var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
+                            ret.Actresses += string.Format("{0}, ", HttpUtility.HtmlDecode(actress));
                         }
+                        if (ret.Actresses != null)
+                            ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+                        ret.Title = string.Format("[HardX] {0} - {1}", title, ret.Actresses);
                     }
                 }
             }

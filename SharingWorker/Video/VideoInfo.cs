@@ -14,6 +14,8 @@ namespace SharingWorker.Video
     {
         public string Title;
         public string Actresses;
+        public bool HideId;
+        public bool RemoveIdDash;
 
         public static string GetNormalizedName(string fileName)
         {
@@ -208,7 +210,7 @@ namespace SharingWorker.Video
                     break;
             }
 
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", RemoveIdDash = true };
 
             try
             {
@@ -255,7 +257,7 @@ namespace SharingWorker.Video
         public static async Task<VideoInfo> GetVideoInfo_tokyohot(string id, QueryLang lang)
         {
             var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", HideId = true };
             var num = id.Replace("TokyoHot_", string.Empty);
 
             switch (lang)
@@ -863,7 +865,7 @@ namespace SharingWorker.Video
         public static async Task<VideoInfo> GetVideoInfo_h0930(string id, QueryLang lang)
         {
             var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", HideId = true };
             var num = id.Contains("h0930") ? id.Replace("h0930-", string.Empty) : id.Replace("H0930-", string.Empty);
 
             switch (lang)
@@ -899,7 +901,7 @@ namespace SharingWorker.Video
         public static async Task<VideoInfo> GetVideoInfo_h4610(string id, QueryLang lang)
         {
             var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", HideId = true };
             var num = id.Contains("h4610") ? id.Replace("h4610-", string.Empty) : id.Replace("H4610-", string.Empty);
 
             switch (lang)
@@ -935,7 +937,7 @@ namespace SharingWorker.Video
         public static async Task<VideoInfo> GetVideoInfo_c0930(string id, QueryLang lang)
         {
             var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", HideId = true };
             var num = id.Contains("c0930") ? id.Replace("c0930-", string.Empty) : id.Replace("C0930-", string.Empty);
 
             switch (lang)
@@ -1013,7 +1015,7 @@ namespace SharingWorker.Video
         public static async Task<VideoInfo> GetVideoInfo_heydouga(string id, QueryLang lang)
         {
             var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", HideId = true };
             var num = id.Replace("heydouga-", string.Empty);
 
             switch (lang)
@@ -1096,7 +1098,7 @@ namespace SharingWorker.Video
         public static async Task<VideoInfo> GetVideoInfo_PGM(string id, QueryLang lang)
         {
             var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", HideId = true };
             var num = id.Replace("PGM_", string.Empty).Replace("pgm_", string.Empty);
 
             switch (lang)
@@ -1142,7 +1144,7 @@ namespace SharingWorker.Video
         public static async Task<VideoInfo> GetVideoInfo_FC2(string id, QueryLang lang)
         {
             var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", HideId = true };
             var num = id.Replace("fc2-ppv-", string.Empty).Replace("FC2-PPV-", string.Empty);
 
             switch (lang)

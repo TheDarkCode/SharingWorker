@@ -22,7 +22,7 @@ namespace SharingWorker.Video
         public static async Task<VideoInfo> GetInfo(string id)
         {
             var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", HideId = true };
             var num = id.Split('_')[0];
             
             url = string.Format("http://real2.s-angels.com/teigaku/item.php?ID={0}", id);

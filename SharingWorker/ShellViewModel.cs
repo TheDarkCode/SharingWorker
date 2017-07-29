@@ -464,7 +464,7 @@ namespace SharingWorker
                     }
                     if (GetCover)
                     {
-                        coverTask = VideoCover.GetCover(file.FileName);
+                        coverTask = VideoCover.DownloadCovers(file.FileName);
                         videoTasks.Add(coverTask);
                     }
 

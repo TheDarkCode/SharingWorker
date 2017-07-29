@@ -15,6 +15,7 @@ namespace SharingWorker.Video
             { "200GANA-", "gana" },
             { "259LUXU-", "lux" },
             { "261ARA-", "ara" },
+            { "300MIUM-", "mium" },
         };
 
         public static bool Match(string id)
@@ -22,16 +23,26 @@ namespace SharingWorker.Video
             return idUrls.Keys.Any(id.StartsWith);
         }
 
+        public static List<string> GetCoverUrls(string fileName)
+        {
+            var idUrl = idUrls.First(p => fileName.StartsWith(p.Key));
+            var num = fileName.Replace(idUrl.Key, string.Empty);
+            return new List<string>
+            {
+                string.Format("http://sirouto-douga.1000.tv/img/capture/{0}{1}/{0}{1}_b0.jpg", idUrl.Value, num)
+            };
+        }
+
         public static async Task<VideoInfo> GetInfo(string id)
         {
-            var task = idUrls.First(p => id.StartsWith(p.Key));
-            return await GetInfo(id, task.Key);
+            var idUrl = idUrls.First(p => id.StartsWith(p.Key));
+            return await GetInfo(id, idUrl.Key);
         }
 
         private static async Task<VideoInfo> GetInfo(string id, string key)
         {
             var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var ret = new VideoInfo { Title = "", Actresses = "", HideId = true };
             var num = id.Replace(key, string.Empty);
 
             url = string.Format("http://sirouto-douga.1000.tv/{0}{1}.php", idUrls[key], num);

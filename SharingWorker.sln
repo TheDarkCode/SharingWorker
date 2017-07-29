@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharingWorker", "SharingWorker\SharingWorker.csproj", "{EF465094-D4BC-4FF4-ADF4-E51B12CF8002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoInfoTest", "VideoInfoTest\VideoInfoTest.csproj", "{44B51339-C7E5-43F5-8E0C-2B1B4F6A5434}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoTest", "VideoTest\VideoTest.csproj", "{44B51339-C7E5-43F5-8E0C-2B1B4F6A5434}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

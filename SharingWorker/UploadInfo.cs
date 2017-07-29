@@ -256,7 +256,7 @@ namespace SharingWorker
             var megaBackup = megaLinks;
             var rgBackup = rgLinks;
 
-            var title = id;
+            var outputId = id;
             if (((char.IsDigit(id, 0) && !id.StartsWith("00")) || id.Contains("heyzo") || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV")
                 || id.Contains("H0930") || id.Contains("h0930") || id.Contains("H4610") || id.Contains("h4610") || id.Contains("C0930") || id.Contains("c0930")
                 || id.Contains("heydouga") || id.Contains("av-sikou") || id.Contains("fc2-ppv") || WesternInfo.Match(id)))
@@ -268,17 +268,17 @@ namespace SharingWorker
             }
             else
             {
-                title = id.ToUpper();
+                outputId = id.ToUpper();
                 int dash = 0;
-                for (int i = 0; i < title.Length - 1; i++)
+                for (int i = 0; i < outputId.Length - 1; i++)
                 {
-                    if (char.IsLetter(title[i]))
+                    if (char.IsLetter(outputId[i]))
                     {
-                        if (!char.IsDigit(title[i + 1])) continue;
+                        if (!char.IsDigit(outputId[i + 1])) continue;
                         dash = i + 1;
                     }
                 }
-                if (dash > 0) title = title.Insert(dash, "-");
+                if (dash > 0) outputId = outputId.Insert(dash, "-");
             }
 
             var flinks = new Dictionary<int, string>
@@ -407,7 +407,7 @@ namespace SharingWorker
                 if (string.IsNullOrEmpty(linksPage))
                 {
                     await
-                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored);
+                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored);
                 }
                 else
                 {
@@ -426,7 +426,7 @@ namespace SharingWorker
                     }
 
                     await
-                        GenerateOutput(title, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored, shinkinLink, ouoLink);
+                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored, shinkinLink, ouoLink);
                 }
 
                 if (!string.IsNullOrEmpty(linksPage) && string.IsNullOrEmpty(ouoLink))
@@ -452,20 +452,23 @@ namespace SharingWorker
             return ret;
         }
 
-        private void GenerateBlogPost(string title, string imageCodeBlog, string linksPage, string shinkinLink, string ouoLink, LinksBackup linksBackup, VideoInfo videoInfo)
+        private void GenerateBlogPost(string outputId, string imageCodeBlog, string linksPage, string shinkinLink, string ouoLink, LinksBackup linksBackup, VideoInfo videoInfo)
         {
-            var blogTitle = "";
+            string blogTitle;
             if (videoInfo.Title.Contains("Tokyo Hot"))
             {
                 blogTitle = string.Format("{0}", videoInfo.Title.Replace("Tokyo Hot", "Tokyo-Hot"));
             }
             else
             {
-                blogTitle = string.Format("[{1}] {0}", videoInfo.Title, title);
-                if (blogTitle.Count(c => c == '-') == 1 && !blogTitle.Contains('_'))
-                    blogTitle = blogTitle.Replace("-", "");
+                if (videoInfo.RemoveIdDash)
+                {
+                    outputId = outputId.Replace("-", "");
+                }
+
+                blogTitle = videoInfo.HideId ? videoInfo.Title :
+                    string.Format("[{0}] {1}", outputId, videoInfo.Title);
             }
-            blogTitle = RemoveTitle(title, blogTitle);
 
             var linksContent = linksPage;
             if (!string.IsNullOrEmpty(shinkinLink) && !string.IsNullOrEmpty(ouoLink))
@@ -483,7 +486,7 @@ namespace SharingWorker
 
             Blogger.AddPost(new Blogger.BlogPost(blogTitle, imageCodeBlog, linksContent, linksBackup));
 
-            var content = string.Format("{0} ({1})", videoInfo.Title, title) + Environment.NewLine + Environment.NewLine +
+            var content = blogTitle + Environment.NewLine + Environment.NewLine +
                     "<div style='text-align: center;'>" +
                     imageCodeBlog +
                     "</div>" +
@@ -495,13 +498,13 @@ namespace SharingWorker
             File.AppendAllText(outputPath_blog, content);
         }
 
-        private async Task GenerateOutput(string title, string fileSize, string fileFormat, string imageCode,
+        private async Task GenerateOutput(string outputId, string fileSize, string fileFormat, string imageCode,
             string imageCodeBlog, string linksPage, LinksBackup linksBackup , bool isCensored,
             string shinkinLink = null, string ouoLink = null)
         {
-            var videoInfoTw = await VideoInfo.QueryVideoInfo(title, QueryLang.TW);
+            var videoInfoTw = await VideoInfo.QueryVideoInfo(outputId, QueryLang.TW);
 
-            GenerateBlogPost(title, imageCodeBlog, linksPage, shinkinLink, ouoLink, linksBackup, videoInfoTw);
+            GenerateBlogPost(outputId, imageCodeBlog, linksPage, shinkinLink, ouoLink, linksBackup, videoInfoTw);
 
             var censored = isCensored ? "有碼" : "無碼";
             var linksContent = linksPage;
@@ -518,11 +521,14 @@ namespace SharingWorker
                 linksContent = ouoLink;
             }
 
-            var content = string.Format(@"{5} ({0}) [{1}/{2}][多空]
+            var title = videoInfoTw.HideId ? videoInfoTw.Title 
+                : string.Format("{0} ({1})", videoInfoTw.Title, outputId);
 
-[color=green][b]【影片名稱】：[/b][/color]{5} ({0})
+            var content = string.Format(@"{0} [{1}/{2}][多空]
 
-[color=green][b]【出演女優】：[/b][/color]{6}
+[color=green][b]【影片名稱】：[/b][/color]{0}
+
+[color=green][b]【出演女優】：[/b][/color]{5}
 
 [color=green][b]【檔案大小】：[/b][/color]{1}
 
@@ -530,9 +536,9 @@ namespace SharingWorker
 
 [color=green][b]【檔案格式】：[/b][/color]{2}
 
-[color=green][b]【下載空間】：[/b][/color]Mega & {8}
+[color=green][b]【下載空間】：[/b][/color]Mega & {7}
 
-[color=green][b]【有／無碼】：[/b][/color]{7}
+[color=green][b]【有／無碼】：[/b][/color]{6}
 
 [color=green][b]【圖片預覽】：[/b][/color]
 {3}
@@ -544,9 +550,7 @@ namespace SharingWorker
 
 ==
 
-", title, fileSize, fileFormat, imageCode, linksContent, videoInfoTw.Title, videoInfoTw.Actresses, censored, SecondHostName);
-
-            content = RemoveTitle(title, content);
+", title, fileSize, fileFormat, imageCode, linksContent, videoInfoTw.Actresses, censored, SecondHostName);
 
             File.AppendAllText(outputPath_lh, content);
             File.AppendAllText(outputPath_l, content.Replace(Environment.NewLine + "[hide]", string.Empty).Replace("[/hide]" + Environment.NewLine, string.Empty));
@@ -554,7 +558,7 @@ namespace SharingWorker
     //        var blogLinks = ShinkIn.GetEnabled
     //? string.Format("<a href=\"{0}\">{0}</a>", cashLinks) : cashLinks;
 
-    //        content = string.Format("{0} ({1})", videoInfoTw.Title, title) + Environment.NewLine + Environment.NewLine +
+    //        content = string.Format("{0} ({1})", videoInfoTw.Title, outputId) + Environment.NewLine + Environment.NewLine +
     //                "<div style='text-align: center;'>" +
     //                imageCodeBlog +
     //                "</div>" +
@@ -564,16 +568,6 @@ namespace SharingWorker
     //                "==" + Environment.NewLine + Environment.NewLine;
 
     //        File.AppendAllText(outputPath_blog, content);
-        }
-
-        private string RemoveTitle(string title, string content)
-        {
-            if (title.Contains("heydouga") || title.Contains("TokyoHot") || title.Contains("zipang") ||
-                title.Contains("detail") || title.Contains("h0930") || title.Contains("h4610") || title.Contains("c0930"))
-            {
-                return content.Replace(string.Format(" ({0})", title), string.Empty);
-            }
-            return content;
         }
 
         private void GenerateWestern(string ouoLink, string shinkLink, string fileSize, string fileFormat, string imageCode)
