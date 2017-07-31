@@ -159,5 +159,17 @@ namespace VideoTest.Info
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestBangBros()
+        {
+            var info = await WesternInfo.GetBangBros("BB_3406665");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetBangBros("BB_3406627");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
