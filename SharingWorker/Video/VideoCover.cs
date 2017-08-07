@@ -172,7 +172,11 @@ namespace SharingWorker.Video
             {
                 return SiroutoDouga.GetCoverUrls(fileName);
             }
-            
+            if (WesternInfo.Match(fileName))
+            {
+                return new List<string>();
+            }
+
             return new List<string> { await QueryDmmImage(fileName) };
         }
 
@@ -201,7 +205,7 @@ namespace SharingWorker.Video
             }
         }
 
-        private static async Task<string> QueryDmmImage(string id)
+        public static async Task<string> QueryDmmImage(string id)
         {
             if (id.Last() == 'A' || id.Last() == 'a') id = id.Substring(0, id.Length - 1);
             if (id.Last() == 'B' || id.Last() == 'b') return string.Empty;
@@ -211,14 +215,12 @@ namespace SharingWorker.Video
             using (var handler = new HttpClientHandler())
             using (var client = new HttpClient(handler))
             {
-                using (var message = await client.GetAsync(url))
-                {
-                    var response = await message.Content.ReadAsStringAsync();
-                    var start = response.IndexOf("http://pics.dmm.co.jp/", 0, StringComparison.Ordinal);
-                    if (start < 0) return string.Empty;
-                    var end = response.IndexOf(".jpg", start, StringComparison.Ordinal) + 4;
-                    return end - start <= 0 ? string.Empty : response.Substring(start, end - start);
-                }
+                var responseString = await client.GetStringAsync(url);
+                var start = responseString.IndexOf("pics.dmm.co.jp/", 0, StringComparison.Ordinal);
+                if (start < 0) return string.Empty;
+                var end = responseString.IndexOf(".jpg", start, StringComparison.Ordinal) + 4;
+                if (end - start <= 0) return string.Empty;
+                return "http://" + responseString.Substring(start, end - start);
             }
         }
 
