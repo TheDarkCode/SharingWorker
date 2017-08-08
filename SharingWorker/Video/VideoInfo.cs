@@ -490,7 +490,7 @@ namespace SharingWorker.Video
             return ret;
         }
 
-        private static async Task<VideoInfo> GetVideoInfo_caribpr(string id, QueryLang lang)
+        public static async Task<VideoInfo> GetVideoInfo_caribpr(string id, QueryLang lang = QueryLang.TW)
         {
             var url = string.Empty;
             var ret = new VideoInfo { Title = "", Actresses = "" };
@@ -519,16 +519,18 @@ namespace SharingWorker.Video
                             var find = "カリビアンコム プレミアム ";
                             start = responseString.IndexOf(find, start, StringComparison.Ordinal) + find.Length;
                             var end = responseString.IndexOf("(", start, StringComparison.Ordinal);
-                            if (end >= 0)
-                            {
-                                ret.Actresses = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+                            if (end < 0) return ret;
 
-                                start = end + 1;
-                                end = responseString.IndexOf(")</title>", start, StringComparison.Ordinal);
-                                if (end >= 0)
-                                {
-                                    ret.Title = end - start <= 0 ? string.Empty : string.Format("{0} {1}",responseString.Substring(start, end - start), ret.Actresses);
-                                }
+                            ret.Actresses = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+
+                            start = end + 1;
+                            end = responseString.IndexOf(")</title>", start, StringComparison.Ordinal);
+                            if (end < 0) return ret;
+                            
+                            ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+                            if (!ret.Title.EndsWith(ret.Actresses))
+                            {
+                                ret.Title = string.Format("{0} {1}", ret.Title, ret.Actresses);
                             }
                         }
                         break;

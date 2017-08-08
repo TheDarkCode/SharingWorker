@@ -18,5 +18,18 @@ namespace VideoTest.Info
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestCaribbeancompr()
+        {
+            var info = await VideoInfo.GetVideoInfo_caribpr("071317_001-caribpr");
+            Trace.WriteLine(info.Title);
+            info = await VideoInfo.GetVideoInfo_caribpr("071317_002-caribpr");
+            Trace.WriteLine(info.Title);
+            info = await VideoInfo.GetVideoInfo_caribpr("080117_001-caribpr");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
