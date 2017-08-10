@@ -31,5 +31,16 @@ namespace VideoTest.Info
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestDmm()
+        {
+            var info = await VideoInfo.GetVideoInfo_Dmm("SNIS908");
+            Trace.WriteLine(info.Title);
+            info = await VideoInfo.GetVideoInfo_Dmm("SNIS909");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }

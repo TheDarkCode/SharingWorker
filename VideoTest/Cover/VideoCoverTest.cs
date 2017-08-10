@@ -17,6 +17,8 @@ namespace VideoTest.Cover
         {
             var url = await VideoCover.QueryDmmImage("MIAE057");
             Trace.WriteLine(url);
+            url = await VideoCover.QueryDmmImage("SNIS909");
+            Trace.WriteLine(url);
             Assert.IsTrue(!string.IsNullOrEmpty(url));
         }
     }

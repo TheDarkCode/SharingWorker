@@ -197,7 +197,7 @@ namespace SharingWorker.Video
             return await GetVideoInfo_Dmm(id, lang);
         }
 
-        private static async Task<VideoInfo> GetVideoInfo_Dmm(string id, QueryLang lang)
+        public static async Task<VideoInfo> GetVideoInfo_Dmm(string id, QueryLang lang = QueryLang.TW)
         {
             var url = string.Empty;
             switch (lang)
@@ -217,34 +217,43 @@ namespace SharingWorker.Video
                 using (var handler = new HttpClientHandler())
                 using (var client = new HttpClient(handler))
                 {
-                    client.Timeout = new TimeSpan(0,5,0);
-                    using (var message = await client.GetAsync(url))
-                    {
-                        var response = await message.Content.ReadAsStringAsync();
-                        var start = response.IndexOf("<title>", 0, StringComparison.Ordinal);
-                        if (start >= 0)
-                        {
-                            start = response.IndexOf(" ", start, StringComparison.Ordinal) + 1;
-                            var end = response.IndexOf(" - JAVLibrary", start, StringComparison.Ordinal);
-                            if (end >= 0)
-                            {
-                                ret.Title = end - start <= 0 ? string.Empty : response.Substring(start, end - start);
-                            }
-                        }
+                    client.Timeout = new TimeSpan(0,6,0);
+                    var responseString = await client.GetStringAsync(url);
 
-                        foreach (var actStart in response.AllIndexesOf("<a href=\"vl_star.php?s="))
-                        {
-                            start = response.IndexOf(">", actStart, StringComparison.Ordinal) + 1;
-                            var end = response.IndexOf("</a>", start, StringComparison.Ordinal);
-                            if (end >= 0)
-                            {
-                                ret.Actresses += end - start <= 0
-                                    ? string.Empty
-                                    : string.Format("{0} ", response.Substring(start, end - start));
-                            }
-                        }
-                        ret.Actresses = ret.Actresses.TrimEnd(' ');
+                    if (responseString.IndexOf("識別碼搜尋結果") > 0)
+                    {
+                        var search = "/?v=";
+                        var urlStart = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                        if (urlStart < 0) return ret;
+                        var urlEnd = responseString.IndexOf("\"", urlStart, StringComparison.Ordinal);
+                        var urlId = responseString.Substring(urlStart, urlEnd - urlStart);
+                        url = string.Format("http://www.javlibrary.com/tw{0}", urlId);
+                        responseString = await client.GetStringAsync(url);
                     }
+
+                    var start = responseString.IndexOf("<title>", 0, StringComparison.Ordinal);
+                    if (start >= 0)
+                    {
+                        start = responseString.IndexOf(" ", start, StringComparison.Ordinal) + 1;
+                        var end = responseString.IndexOf(" - JAVLibrary", start, StringComparison.Ordinal);
+                        if (end >= 0)
+                        {
+                            ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+                        }
+                    }
+
+                    foreach (var actStart in responseString.AllIndexesOf("<a href=\"vl_star.php?s="))
+                    {
+                        start = responseString.IndexOf(">", actStart, StringComparison.Ordinal) + 1;
+                        var end = responseString.IndexOf("</a>", start, StringComparison.Ordinal);
+                        if (end >= 0)
+                        {
+                            ret.Actresses += end - start <= 0
+                                ? string.Empty
+                                : string.Format("{0} ", responseString.Substring(start, end - start));
+                        }
+                    }
+                    ret.Actresses = ret.Actresses.TrimEnd(' ');
                 }
             }
             catch (Exception ex)

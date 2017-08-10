@@ -220,7 +220,7 @@ namespace SharingWorker.Video
                 if (start < 0) return string.Empty;
                 var end = responseString.IndexOf(".jpg", start, StringComparison.Ordinal) + 4;
                 if (end - start <= 0) return string.Empty;
-                return "http://" + responseString.Substring(start, end - start);
+                return "http://" + responseString.Substring(start, end - start).Replace("ps.jpg", "pl.jpg");
             }
         }
 
