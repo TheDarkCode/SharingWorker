@@ -62,4 +62,4 @@
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
 
-SharingWorker/SharingWorker/webkit/* linguist-vendored
+SharingWorker/webkit/* linguist-vendored
