@@ -25,5 +25,13 @@ namespace VideoTest.Cover
             foreach (var url in urls) Trace.WriteLine(url);
             Assert.IsTrue(urls.Any());
         }
+
+        [TestMethod]
+        public void Test277DCV()
+        {
+            var urls = SiroutoDouga.GetCoverUrls("277DCV-053");
+            foreach (var url in urls) Trace.WriteLine(url);
+            Assert.IsTrue(urls.Any());
+        }
     }
 }
