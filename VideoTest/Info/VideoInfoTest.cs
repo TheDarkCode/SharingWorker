@@ -37,7 +37,7 @@ namespace VideoTest.Info
         {
             var info = await VideoInfo.GetVideoInfo_Dmm("SNIS908");
             Trace.WriteLine(info.Title);
-            info = await VideoInfo.GetVideoInfo_Dmm("SNIS909");
+            info = await VideoInfo.GetVideoInfo_Dmm("SNIS918");
             Trace.WriteLine(info.Title);
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));

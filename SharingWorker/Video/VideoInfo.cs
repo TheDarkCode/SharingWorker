@@ -239,6 +239,7 @@ namespace SharingWorker.Video
                         if (end >= 0)
                         {
                             ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+                            ret.Title = ret.Title.Replace("（ブルーレイディスク）", string.Empty).TrimEnd();
                         }
                     }
 
@@ -253,7 +254,7 @@ namespace SharingWorker.Video
                                 : string.Format("{0} ", responseString.Substring(start, end - start));
                         }
                     }
-                    ret.Actresses = ret.Actresses.TrimEnd(' ');
+                    ret.Actresses = ret.Actresses.TrimEnd();
                 }
             }
             catch (Exception ex)
