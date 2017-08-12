@@ -171,5 +171,17 @@ namespace VideoTest.Info
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestBLACKED()
+        {
+            var info = await WesternInfo.GetBLACKED("BLACKED_i-like-it-kinky");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetBLACKED("BLACKED_ive-never-done-this-before");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
