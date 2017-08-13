@@ -33,6 +33,17 @@ namespace VideoTest.Info
         }
 
         [TestMethod]
+        public async Task TestCaribbeancom()
+        {
+            var info = await VideoInfo.GetVideoInfo_carib("081217-478");
+            Trace.WriteLine(info.Title);
+            info = await VideoInfo.GetVideoInfo_carib("081017-006");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
+
+        [TestMethod]
         public async Task TestDmm()
         {
             var info = await VideoInfo.GetVideoInfo_Dmm("SNIS908");

@@ -433,7 +433,7 @@ namespace SharingWorker.Video
             return ret;
         }
 
-        private static async Task<VideoInfo> GetVideoInfo_carib(string id, QueryLang lang)
+        public static async Task<VideoInfo> GetVideoInfo_carib(string id, QueryLang lang = QueryLang.TW)
         {
             var url = string.Empty;
             var ret = new VideoInfo { Title = "", Actresses = "" };
@@ -453,43 +453,55 @@ namespace SharingWorker.Video
             {
                 using (var message = await client.GetAsync(url))
                 {
-                    var response = await message.Content.ReadAsStringAsync();
+                    var responseString = await message.Content.ReadAsStringAsync();
                     
-                    var start = response.IndexOf("<title>", 0, StringComparison.Ordinal);
+                    var start = responseString.IndexOf("<title>", 0, StringComparison.Ordinal);
                     switch(lang)
                     {
                         case QueryLang.TW:
 
                             var search = "<h1 itemprop=\"name\">";
-                            var titleStart = response.IndexOf(search, start, StringComparison.Ordinal);
+                            var titleStart = responseString.IndexOf(search, start, StringComparison.Ordinal);
                             if (titleStart >= 0)
                             {
                                 titleStart = titleStart + search.Length;
-                                var end = response.IndexOf("</h1>", titleStart, StringComparison.Ordinal);
+                                var end = responseString.IndexOf("</h1>", titleStart, StringComparison.Ordinal);
                                 if (end >= 0)
                                 {
-                                    ret.Title = end - titleStart <= 0 ? string.Empty : response.Substring(titleStart, end - titleStart);
+                                    ret.Title = end - titleStart <= 0 ? string.Empty : responseString.Substring(titleStart, end - titleStart);
 
-                                    start = start + 7;
-                                    end = response.IndexOf(" カリビアンコム </title>", start, StringComparison.Ordinal);
-                                    if (end >= 0)
+                                    search = "出演:</dt>";
+                                    start = responseString.IndexOf(search, end, StringComparison.Ordinal);
+                                    start += search.Length;
+                                    end = responseString.IndexOf("</dd>", start, StringComparison.Ordinal);
+
+                                    var namesStr = responseString.Substring(start, end - start);
+
+                                    search = "<span itemprop=\"name\">";
+                                    foreach (var searchStart in namesStr.AllIndexesOf(search))
                                     {
-                                        var all = end - start <= 0 ? string.Empty : response.Substring(start, end - start);
-                                        ret.Actresses = all.Replace(ret.Title, string.Empty).TrimStart(' ').RemoveEnd(" -");
-                                        if(!string.IsNullOrEmpty(ret.Actresses))
-                                            ret.Title += string.Format(" {0}", ret.Actresses);
+                                        if (searchStart < 0) continue;
+                                        var aStart = searchStart + search.Length;
+                                        var aEnd = namesStr.IndexOf("</span>", aStart, StringComparison.Ordinal);
+                                        ret.Actresses += string.Format("{0}, ", namesStr.Substring(aStart, aEnd - aStart));
                                     }
+
+                                    if (ret.Actresses != null)
+                                        ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+                                    if (!string.IsNullOrEmpty(ret.Actresses))
+                                        ret.Title += string.Format(" {0}", ret.Actresses);
                                 }
                             }
                             break;
                         case QueryLang.EN:
                             if (start >= 0)
                             {
-                                start = response.IndexOf(":: ", start, StringComparison.Ordinal) + 3;
-                                var end = response.IndexOf("</h2>", start, StringComparison.Ordinal);
+                                start = responseString.IndexOf(":: ", start, StringComparison.Ordinal) + 3;
+                                var end = responseString.IndexOf("</h2>", start, StringComparison.Ordinal);
                                 if (end >= 0)
                                 {
-                                    ret.Actresses = end - start <= 0 ? string.Empty : response.Substring(start, end - start);
+                                    ret.Actresses = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
                                     ret.Title = string.Format("{0} - {1}", id, ret.Actresses);
                                 }
                             }
