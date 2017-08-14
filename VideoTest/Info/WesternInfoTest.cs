@@ -183,5 +183,17 @@ namespace VideoTest.Info
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestLUBED()
+        {
+            var info = await WesternInfo.GetLUBED("LUBED_meshing-together");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetLUBED("LUBED_wet-brunette");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
