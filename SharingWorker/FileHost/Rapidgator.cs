@@ -65,7 +65,7 @@ namespace SharingWorker.FileHost
                     client.DefaultRequestHeaders.Add("User-Agent",
                         "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
 
-                    client.DefaultRequestHeaders.Referrer = new Uri("http://rapidgator.net/filesystem/index");
+                    client.DefaultRequestHeaders.Referrer = new Uri("https://rapidgator.net/filesystem/index");
                     client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
                     client.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
                     client.DefaultRequestHeaders.Add("Pragma", "no-cache");
@@ -76,7 +76,7 @@ namespace SharingWorker.FileHost
                         new KeyValuePair<string, string>("search_text", filename),
                     });
 
-                    using (var response = await client.PostAsync("http://rapidgator.net/filesystem/FindFile", content))
+                    using (var response = await client.PostAsync("https://rapidgator.net/filesystem/FindFile", content))
                     {
                         var links = new List<string>();
                         var result = await response.Content.ReadAsStringAsync();
