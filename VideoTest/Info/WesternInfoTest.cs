@@ -9,6 +9,17 @@ namespace VideoTest.Info
     public class WesternInfoTest
     {
         [TestMethod]
+        public async Task TestLegalPorno()
+        {
+            var info = await WesternInfo.GetLegalPorno("SZ1726");
+            Trace.WriteLine(info.Title);
+            info = await WesternInfo.GetLegalPorno("GIO431");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
+
+        [TestMethod]
         public async Task TestZTOD()
         {
             var info = await WesternInfo.GetZTOD("ZTOD_21712");

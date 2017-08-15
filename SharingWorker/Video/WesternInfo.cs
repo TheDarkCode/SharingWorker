@@ -69,34 +69,18 @@ namespace SharingWorker.Video
             {
                 var responseString = await client.GetStringAsync(url);
 
-                var search = "<div class='thumbnail-image'>";
-                var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
+                var search = "<h1 class='watchpage-title'>";
+                var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
                 if (start >= 0)
                 {
-                    search = "<a href='";
-                    start = responseString.IndexOf(search, start, StringComparison.OrdinalIgnoreCase);
-
-                    start = start + search.Length;
-                    var end = responseString.IndexOf("'", start, StringComparison.OrdinalIgnoreCase);
-                    if (end >= 0)
-                    {
-                        var videoUrl = responseString.Substring(start, end - start);
-                        if (!videoUrl.StartsWith("http")) return ret;
-
-                        responseString = await client.GetStringAsync(videoUrl);
-                        search = "<h1 class='watchpage-title'>";
-                        start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
-                        if (start >= 0)
-                        {
-                            start = start + search.Length;
-                            end = responseString.IndexOf("</h1>", start, StringComparison.OrdinalIgnoreCase);
-
-                            var title = responseString.Substring(start, end - start).TrimStart('\n').TrimEnd(' ');
-                            title = System.Web.HttpUtility.HtmlDecode(title);
-                            ret.Actresses = string.Empty;
-                            ret.Title = string.Format("[LegalPorno]{0}", title);
-                        }
-                    }
+                    start += search.Length;
+                    var end = responseString.IndexOf("</h1>", start, StringComparison.Ordinal);
+                    if (end < 0) return ret;
+                    
+                    var title = responseString.Substring(start, end - start).TrimStart('\n').TrimEnd();
+                    title = HttpUtility.HtmlDecode(title);
+                    ret.Actresses = string.Empty;
+                    ret.Title = string.Format("[LegalPorno]{0}", title);
                 }
             }
             return ret;
