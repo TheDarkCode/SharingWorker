@@ -206,5 +206,17 @@ namespace VideoTest.Info
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestSPIZOO()
+        {
+            var info = await WesternInfo.GetSPIZOO("SPIZOO_Riley-Reyes-College-Fan");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetSPIZOO("SPIZOO_The-Ring-Fight");
+            Trace.WriteLine(info.Title);
+            
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }

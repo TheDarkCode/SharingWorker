@@ -42,6 +42,7 @@ namespace SharingWorker.Video
             { "VIXEN_", GetVIXEN },
             { "BLACKED_", GetBLACKED },
             { "LUBED_", GetLUBED },
+            { "SPIZOO_", GetSPIZOO },
         };
 
         public static bool Match(string id)
@@ -1181,6 +1182,50 @@ namespace SharingWorker.Video
 
                         ret.Title = string.Format("[LUBED] {0} - {1}", ret.Title, ret.Actresses);
                     }
+                }
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetSPIZOO(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("SPIZOO_", string.Empty);
+
+            url = string.Format("http://www.spizoo.com/updates/{0}.html", num);
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var responseString = await client.GetStringAsync(url);
+
+                var search = "<div class=\"col-sm-7\">";
+                var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                if (start < 0) return ret;
+                search = "<h2>";
+                start = responseString.IndexOf(search, start, StringComparison.Ordinal);
+                if (start < 0) return ret;
+                start += search.Length;
+                var end = responseString.IndexOf("</h2>", start, StringComparison.Ordinal);
+                if (end >= 0)
+                {
+                    ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
+                    start = responseString.IndexOf("<p class=\"lead\">Featuring:", end, StringComparison.Ordinal);
+                    end = responseString.IndexOf("</p>", start, StringComparison.Ordinal);
+
+                    var namesStr = responseString.Substring(start, end - start);
+                    search = "'>";
+                    foreach (var nameStart in namesStr.AllIndexesOf(search))
+                    {
+                        var aStart = nameStart + search.Length;
+                        var aEnd = namesStr.IndexOf("</a>", nameStart, StringComparison.Ordinal);
+                        var actress = namesStr.Substring(aStart, aEnd - aStart).Replace(". ", string.Empty);
+                        ret.Actresses += string.Format("{0}, ", actress);
+                    }
+                    if (ret.Actresses != null)
+                        ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+                    ret.Title = string.Format("[SPIZOO] {0} - {1}", ret.Title, ret.Actresses);
                 }
             }
             return ret;
