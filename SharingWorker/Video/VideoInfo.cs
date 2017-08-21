@@ -1190,7 +1190,7 @@ namespace SharingWorker.Video
                             var end = responseString.IndexOf("</title>", start, StringComparison.OrdinalIgnoreCase);
                             if (end >= 0)
                             {
-                                var title = responseString.Substring(start, end - start);
+                                var title = HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
                                 ret.Actresses = string.Empty;
                                 ret.Title = string.Format("FC2-PPV {0} {1}", num, title);
                             }
