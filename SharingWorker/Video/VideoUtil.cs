@@ -92,16 +92,16 @@ namespace SharingWorker.Video
 
         private static int GetSplitSize(string fileSize)
         {
-            var ret = 260;
+            var ret = 300;
             if (fileSize.Contains("GB"))
             {
                 var size = Convert.ToDouble(fileSize.Replace("GB", string.Empty));
-                if (size >= 1.42 && size < 1.8)
-                    ret = 300;
-                else if (size >= 1.8 && size < 3.0)
+                if (size >= 1.5 && size < 2.0)
                     ret = 350;
-                else if (size >= 3.0)
+                else if (size >= 2.0 && size < 3.0)
                     ret = 400;
+                else if (size >= 3.0)
+                    ret = 450;
             }
             return ret;
         }
