@@ -4,9 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Newtonsoft.Json.Linq;
 
 namespace SharingWorker.Video
 {
@@ -43,6 +45,7 @@ namespace SharingWorker.Video
             { "BLACKED_", GetBLACKED },
             { "LUBED_", GetLUBED },
             { "SPIZOO_", GetSPIZOO },
+            { "HushPass_", GetHushPass },
         };
 
         public static bool Match(string id)
@@ -70,12 +73,12 @@ namespace SharingWorker.Video
             {
                 var responseString = await client.GetStringAsync(url);
 
-                var search = "<h1 class='watchpage-title'>";
+                var search = "<title>";
                 var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
                 if (start >= 0)
                 {
                     start += search.Length;
-                    var end = responseString.IndexOf("</h1>", start, StringComparison.Ordinal);
+                    var end = responseString.IndexOf(" -\n LegalPorno", start, StringComparison.Ordinal);
                     if (end < 0) return ret;
                     
                     var title = responseString.Substring(start, end - start).TrimStart('\n').TrimEnd();
@@ -1227,6 +1230,36 @@ namespace SharingWorker.Video
 
                     ret.Title = string.Format("[SPIZOO] {0} - {1}", ret.Title, ret.Actresses);
                 }
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetHushPass(string id)
+        {
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("HushPass_", string.Empty);
+
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36");
+                client.DefaultRequestHeaders.ExpectContinue = false;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("br"));
+                client.DefaultRequestHeaders.Referrer = new Uri(string.Format("https://hushpass.com/video/{0}.html", num));
+
+                var content = new StringContent(string.Format("{{\"method\":\"JSONP\",\"headers\":{{\"Content-Type\":\"application/x-www-form-urlencoded;charset=utf-8;\"}},\"slug\":\"{0}.html\"}}", num), Encoding.UTF8, "application/json");
+                var response = await client.PostAsync("https://hushpass.com/administrator/admin/hushpass/api/getVideobyUrl", content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                dynamic result = JObject.Parse(responseString);
+                ret.Title = result.video.title;
+                ret.Actresses = result.video.scenes_artist_name;
+                ret.Title = string.Format("[HushPass] {0} - {1}", ret.Title, ret.Actresses);
             }
             return ret;
         }
