@@ -697,7 +697,7 @@ namespace SharingWorker.Video
             var ret = new VideoInfo { Title = "", Actresses = "" };
             var num = id.Replace("TS_", string.Empty);
 
-            url = string.Format("http://www.teamskeet.com/t1/search/results/");
+            url = "http://teamskeet.com/t1/search/results/";
             using (var handler = new HttpClientHandler())
             using (var client = new HttpClient(handler))
             {
@@ -712,7 +712,7 @@ namespace SharingWorker.Video
                 var response = await client.PostAsync(url, content);
                 var responseString = await response.Content.ReadAsStringAsync();
                 
-                var search = string.Format("http://www.teamskeet.com/t1/trailer/view/{0}", num);
+                var search = string.Format("http://teamskeet.com/t1/trailer/view/{0}", num);
                 var start = responseString.IndexOf(search, 0, StringComparison.OrdinalIgnoreCase);
                 if (start >= 0)
                 {
