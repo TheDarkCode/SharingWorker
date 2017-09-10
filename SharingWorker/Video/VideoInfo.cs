@@ -468,7 +468,7 @@ namespace SharingWorker.Video
                                 var end = responseString.IndexOf("</h1>", titleStart, StringComparison.Ordinal);
                                 if (end >= 0)
                                 {
-                                    ret.Title = end - titleStart <= 0 ? string.Empty : responseString.Substring(titleStart, end - titleStart);
+                                    ret.Title = end - titleStart <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(titleStart, end - titleStart));
 
                                     search = "出演:</dt>";
                                     start = responseString.IndexOf(search, end, StringComparison.Ordinal);
@@ -549,7 +549,7 @@ namespace SharingWorker.Video
                             end = responseString.IndexOf(")</title>", start, StringComparison.Ordinal);
                             if (end < 0) return ret;
                             
-                            ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start);
+                            ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
                             if (!ret.Title.EndsWith(ret.Actresses))
                             {
                                 ret.Title = string.Format("{0} {1}", ret.Title, ret.Actresses);
@@ -598,7 +598,7 @@ namespace SharingWorker.Video
                             end = responseString.IndexOf("</title>", start, StringComparison.Ordinal);
                             if (end >= 0)
                             {
-                                ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start).Replace("  ", " ");
+                                ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start).Replace("  ", " "));
 
                                 start = responseString.IndexOf("タイトル：</em>", end, StringComparison.Ordinal);
                                 if (start < 0) return ret;
@@ -729,7 +729,7 @@ namespace SharingWorker.Video
                             end = responseString.IndexOf("</h2>", start, StringComparison.Ordinal);
                             if (end >= 0)
                             {
-                                ret.Title = end - start <= 0 ? string.Empty : "ガチん娘！ " + responseString.Substring(start, end - start).Replace("　", " ");
+                                ret.Title = end - start <= 0 ? string.Empty : "ガチん娘！ " + HttpUtility.HtmlDecode(responseString.Substring(start, end - start).Replace("　", " "));
 
                                 end = responseString.IndexOf("　", start, StringComparison.Ordinal);
                                 if (end < 0) return ret;
@@ -781,7 +781,7 @@ namespace SharingWorker.Video
                             var end = responseString.IndexOf("</h1>", start, StringComparison.Ordinal);
                             if (end >= 0)
                             {
-                                ret.Title = end - start <= 0 ? string.Empty : responseString.Substring(start, end - start).TrimStart(Environment.NewLine.ToCharArray());
+                                ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start).TrimStart(Environment.NewLine.ToCharArray()));
 
                                 start = responseString.IndexOf("名前：</em>", end, StringComparison.Ordinal);
                                 if (start >= 0)
@@ -851,7 +851,7 @@ namespace SharingWorker.Video
                             var end = responseString.IndexOf("</td>", start, StringComparison.Ordinal);
                             if (end >= 0)
                             {
-                                ret.Title = end - start <= 0 ? string.Empty : "メス豚 " + responseString.Substring(start, end - start);
+                                ret.Title = end - start <= 0 ? string.Empty : "メス豚 " + HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
 
                                 start = responseString.IndexOf("<th>なまえ</th>", end, StringComparison.Ordinal);
                                 start = responseString.IndexOf("<td>", start, StringComparison.Ordinal);
