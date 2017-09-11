@@ -151,6 +151,9 @@
       <HintPath>webkit\OpenWebKitSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Polly, Version=5.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Polly.5.3.1\lib\net45\Polly.dll</HintPath>
+    </Reference>
     <Reference Include="SharpCompress">
       <HintPath>..\packages\sharpcompress.0.10.3\lib\net40\SharpCompress.dll</HintPath>
     </Reference>
@@ -214,13 +217,15 @@
     <Compile Include="FileHost\Rapidgator.cs" />
     <Compile Include="FileHost\ShinkIn.cs" />
     <Compile Include="FileHost\ShorteSt.cs" />
+    <Compile Include="FileHost\UploadGIG.cs" />
     <Compile Include="FileHost\Urle.cs" />
     <Compile Include="ImageHost\ImgDrive.cs" />
     <Compile Include="ImageHost\ImageTwist.cs" />
     <Compile Include="ImageHost\ImgRock.cs" />
     <Compile Include="ImageHost\PixSense.cs" />
-    <Compile Include="MailHost\MailSource.cs" />
-    <Compile Include="MailHost\Mailinator.cs" />
+    <Compile Include="MailHost\IMailHost.cs" />
+    <Compile Include="MailHost\MailHostBase.cs" />
+    <Compile Include="MailHost\Nada.cs" />
     <Compile Include="MailHost\TempMail.cs" />
     <Compile Include="Post\Blogger.cs" />
     <Compile Include="MahDialog.cs" />
@@ -231,7 +236,6 @@
     <Compile Include="Video\VideoInfo.cs" />
     <Compile Include="Video\VideoUtil.cs" />
     <Compile Include="FileHost\MEGA.cs" />
-    <Compile Include="FileHost\Bigfile.cs" />
     <Compile Include="ImageHost\IImageHost.cs" />
     <Compile Include="ImageHost\ImgChili.cs" />
     <Compile Include="ImageHost\ImgSpice.cs" />

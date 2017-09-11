@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharingWorker.Video;
 
-namespace VideoTest.Info
+namespace SharingWorkerTest.VideoInfo
 {
     [TestClass, TestCategory("Video Info")]
     public class VideoInfoTest
@@ -22,11 +22,11 @@ namespace VideoTest.Info
         [TestMethod]
         public async Task TestCaribbeancompr()
         {
-            var info = await VideoInfo.GetVideoInfo_caribpr("071317_001-caribpr");
+            var info = await SharingWorker.Video.VideoInfo.GetVideoInfo_caribpr("071317_001-caribpr");
             Trace.WriteLine(info.Title);
-            info = await VideoInfo.GetVideoInfo_caribpr("071317_002-caribpr");
+            info = await SharingWorker.Video.VideoInfo.GetVideoInfo_caribpr("071317_002-caribpr");
             Trace.WriteLine(info.Title);
-            info = await VideoInfo.GetVideoInfo_caribpr("080117_001-caribpr");
+            info = await SharingWorker.Video.VideoInfo.GetVideoInfo_caribpr("080117_001-caribpr");
             Trace.WriteLine(info.Title);
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
@@ -35,9 +35,9 @@ namespace VideoTest.Info
         [TestMethod]
         public async Task TestCaribbeancom()
         {
-            var info = await VideoInfo.GetVideoInfo_carib("081217-478");
+            var info = await SharingWorker.Video.VideoInfo.GetVideoInfo_carib("081217-478");
             Trace.WriteLine(info.Title);
-            info = await VideoInfo.GetVideoInfo_carib("081017-006");
+            info = await SharingWorker.Video.VideoInfo.GetVideoInfo_carib("081017-006");
             Trace.WriteLine(info.Title);
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
@@ -46,9 +46,9 @@ namespace VideoTest.Info
         [TestMethod]
         public async Task TestDmm()
         {
-            var info = await VideoInfo.GetVideoInfo_Dmm("SNIS908");
+            var info = await SharingWorker.Video.VideoInfo.GetVideoInfo_Dmm("SNIS908");
             Trace.WriteLine(info.Title);
-            info = await VideoInfo.GetVideoInfo_Dmm("SNIS918");
+            info = await SharingWorker.Video.VideoInfo.GetVideoInfo_Dmm("SNIS918");
             Trace.WriteLine(info.Title);
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));

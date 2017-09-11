@@ -45,8 +45,8 @@ namespace SharingWorker
             {
                 if (Rapidgator.GetEnabled)
                     return "Rapidgator";
-                if (Bigfile.GetEnabled)
-                    return "Bigfile";
+                if (UploadGIG.GetEnabled)
+                    return "UploadGIG";
                 if (Datafile.GetEnabled)
                     return "Datafile";
                 return string.Empty;

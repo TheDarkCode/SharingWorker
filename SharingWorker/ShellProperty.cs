@@ -16,7 +16,7 @@ namespace SharingWorker
         Blogger = 1,
         MEGA = 1 << 1,
         Rapidgator = 1 << 2,
-        Bigfile = 1 << 3,
+        UploadGIG = 1 << 3,
         ImgChili = 1 << 4,
         ImgRock = 1 << 5,
         PixSense = 1 << 6,
@@ -28,6 +28,7 @@ namespace SharingWorker
         public static ImgChili ImgChili { get; set; }
         public static ImgRock ImgRock { get; set; }
         public static PixSense PixSense { get; set; }
+        public List<IMailHost> MailHosts { get; set; }
         public BindableCollection<UploadInfo> UploadResults { get; set; }
         public RarListViewModel RarList { get; set; }
         public static bool IsUploadFinished;
@@ -76,14 +77,14 @@ namespace SharingWorker
             }
         }
 
-        private bool bigfileLoggedIn;
-        public bool BigfileLoggedIn
+        private bool uploadGIGLoggedIn;
+        public bool UploadGIGLoggedIn
         {
-            get { return bigfileLoggedIn; }
+            get { return uploadGIGLoggedIn; }
             set
             {
-                bigfileLoggedIn = value;
-                NotifyOfPropertyChange(() => BigfileLoggedIn);
+                uploadGIGLoggedIn = value;
+                NotifyOfPropertyChange(() => UploadGIGLoggedIn);
             }
         }
 
@@ -184,13 +185,13 @@ namespace SharingWorker
             }
         }
 
-        public bool GetBigfile
+        public bool GetUploadGIG
         {
-            get { return Bigfile.GetEnabled; }
+            get { return UploadGIG.GetEnabled; }
             set
             {
-                Bigfile.GetEnabled = value;
-                NotifyOfPropertyChange(() => GetBigfile);
+                UploadGIG.GetEnabled = value;
+                NotifyOfPropertyChange(() => GetUploadGIG);
             }
         }
 
@@ -221,17 +222,6 @@ namespace SharingWorker
             {
                 Ouo.GetEnabled = value;
                 NotifyOfPropertyChange(() => GetOuo);
-            }
-        }
-
-        private MailSource mailSource;
-        public MailSource MailSource
-        {
-            get { return mailSource; }
-            set
-            {
-                mailSource = value;
-                NotifyOfPropertyChange(() => MailSource);
             }
         }
     }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,6 +13,7 @@ using Google.GData.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
+using Polly;
 using SharingWorker.MailHost;
 
 namespace SharingWorker.FileHost
@@ -21,21 +21,32 @@ namespace SharingWorker.FileHost
     static class MEGA
     {
         private static readonly NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
         private static readonly Random rnd = new Random();
-        private static string user = ((NameValueCollection)ConfigurationManager.GetSection("Mega"))["User"];
-        private static string password = ((NameValueCollection)ConfigurationManager.GetSection("Mega"))["Password"];
         private static List<string> links;
 
+        public static string User;
+        public static string Password;
+        
         public static bool CheckEnabled;
         public static bool GetEnabled;
 
+        static MEGA()
+        {
+            var configSec = ConfigurationManager.GetSection("Mega");
+            if (configSec == null) return;
+
+            User = ((NameValueCollection) configSec)["User"];
+            Password = ((NameValueCollection) configSec)["Password"];
+        }
+
         public static bool SetAccountInfo(string account)
         {
-            user = account;
+            User = account;
             try
             {
-                File.AppendAllText("MegaAccount.txt", string.Format("{0}  |  {1}{2}", account, DateTime.Now.ToString("yyyy-MM-dd"), Environment.NewLine));
+                File.AppendAllText("MegaAccount.txt",
+                    string.Format("{0}{1}   |   {2}", Environment.NewLine,
+                    account, DateTime.Now.ToString("yyyy-MM-dd")));
 
                 var appConfig = XDocument.Load("SharingWorker.exe.config");
                 var megaUser = (from el in appConfig.Descendants("Mega").Descendants("add")
@@ -53,14 +64,16 @@ namespace SharingWorker.FileHost
                 return false;
             }
         }
-        
+
         public static async Task<bool> LogIn()
         {
             var processInfo = new ProcessStartInfo
             {
                 FileName = @"megatools/megals.exe",
-                UseShellExecute = false, RedirectStandardOutput = true, CreateNoWindow = true,
-                Arguments = string.Format("-u {0} -p {1} -e -n /Root/", user, password)
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true,
+                Arguments = string.Format("-u {0} -p {1} -e -n /Root/", User, Password)
             };
 
             return await Task.Run(() =>
@@ -80,13 +93,14 @@ namespace SharingWorker.FileHost
                             links = new List<string>();
                             foreach (var linkBegin in result.AllIndexesOf("https://mega.nz/"))
                             {
-                                var linkEnd = result.IndexOf(Environment.NewLine, linkBegin, StringComparison.OrdinalIgnoreCase);
+                                var linkEnd = result.IndexOf(Environment.NewLine, linkBegin,
+                                    StringComparison.OrdinalIgnoreCase);
                                 if (linkEnd > 0)
                                 {
                                     links.Add(result.Substring(linkBegin, linkEnd - linkBegin));
                                 }
                             }
-                            
+
                             return links.Any();
                         }
                         catch (Exception ex)
@@ -105,7 +119,7 @@ namespace SharingWorker.FileHost
             return await Task.Run(() =>
             {
                 var searchLinks = links.Where(s => s.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
-                
+
                 var ret = new List<string>();
                 foreach (var link in searchLinks)
                 {
@@ -126,13 +140,18 @@ namespace SharingWorker.FileHost
                 {
                     using (var handler = new HttpClientHandler())
                     using (var client = new HttpClient(handler))
-                    using (var response = await client.GetAsync(new Uri(string.Format("http://api.urlchecker.net/?response_format=json&link={0}", HttpUtility.UrlEncode(link)))))
+                    using (var response =
+                        await client.GetAsync(new Uri(
+                            string.Format("http://api.urlchecker.net/?response_format=json&link={0}",
+                                HttpUtility.UrlEncode(link)))))
                     {
-                        var jsonObj = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
+                        var jsonObj =
+                            JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
                         var jsonLink = jsonObj.Property("link").Value.ToString();
                         var jsonResult = jsonObj.Property("result").Value.ToString();
                         var jsonStatus = jsonObj.Property("status").Value.ToString();
-                        App.Logger.Info(string.Format("{0} | Result: {1} | Status: {2}", jsonLink, jsonResult, jsonStatus));
+                        App.Logger.Info(string.Format("{0} | Result: {1} | Status: {2}", jsonLink, jsonResult,
+                            jsonStatus));
                         if (jsonStatus != "working") ret = false;
                     }
                 }
@@ -163,7 +182,10 @@ namespace SharingWorker.FileHost
                                 new KeyValuePair<string, string>("links", link),
                             });
 
-                            using (var response = await client.PostAsync(new Uri(string.Format("http://www.luenephysio.de/check/check.php?rand={0}", rnd.NextDouble().ToString("F16"))), content))
+                            using (var response =
+                                await client.PostAsync(
+                                    new Uri(string.Format("http://www.luenephysio.de/check/check.php?rand={0}",
+                                        rnd.NextDouble().ToString("F16"))), content))
                             {
 
                                 var result = await response.Content.ReadAsStringAsync();
@@ -194,20 +216,22 @@ namespace SharingWorker.FileHost
                 return ret;
             });
         }
-
-        public static async Task<string> CreateNewAccount(MailSource mailSource)
+        
+        public static async Task<string> CreateNewAccount(IMailHost mailHost)
         {
-            var mailAddress = "";
-            switch (mailSource)
-            {
-                case MailSource.TempMail:
-                    mailAddress = await TempMail.GetMailAddress().ConfigureAwait(false);
-                    break;
-                case MailSource.Mailinator:
-                    mailAddress = Mailinator.GetMailAddress();
-                    break;
-            }
+            var mailAddress = await mailHost.GetMailAddress();
+            if (string.IsNullOrEmpty(mailAddress)) return string.Empty;
+
+            var verifyCommand = await RegisterAccount(mailAddress);
+            if (string.IsNullOrEmpty(verifyCommand)) return string.Empty;
             
+            var validationUrl = await GetValidationUrl(mailHost, mailAddress);
+            
+            return await VerifyAccount(verifyCommand, validationUrl) ? mailAddress : string.Empty;
+        }
+
+        public static async Task<string> RegisterAccount(string mailAddress)
+        {
             var processInfo = new ProcessStartInfo
             {
                 FileName = @"megatools/megareg.exe",
@@ -216,9 +240,12 @@ namespace SharingWorker.FileHost
                 CreateNoWindow = true,
             };
 
-            processInfo.Arguments = string.Format("--register --email {0} --name \"Javepc\" --password \"{1}\"", mailAddress, password);
-            
-            var verifyCommand = await Task.Run(() =>
+            var user = mailAddress.Remove(mailAddress.IndexOf("@"));
+
+            processInfo.Arguments = string.Format("--register --email {0} --name \"{1}\" --password \"{2}\"",
+                mailAddress, user, Password);
+
+            var ret = await Task.Run(() =>
             {
                 using (var process = Process.Start(processInfo))
                 {
@@ -234,48 +261,60 @@ namespace SharingWorker.FileHost
                     }
                 }
             }).ConfigureAwait(false);
+            return ret;
+        }
 
-            if (string.IsNullOrEmpty(verifyCommand)) return string.Empty;
-            
-            await Task.Delay(12000);
+        private static async Task<string> GetValidationUrl(IMailHost mailHost, string mailAddress)
+        {
+            return await Policy
+                .Handle<Exception>()
+                .OrResult<string>(string.IsNullOrEmpty)
+                .WaitAndRetryAsync(6, retryCount => TimeSpan.FromSeconds(20 * retryCount),
+                    (exception, timeSpan, context) =>
+                    {
+                        Trace.WriteLine(timeSpan.ToString());
+                    })
+                .ExecuteAsync(() => GetSignupMail(mailHost, mailAddress));
+        }
 
-            int start1, end1;
-            var signupMail = "";
-            var validationUrl = "";
-            switch (mailSource)
+        private static async Task<string> GetSignupMail(IMailHost mailHost, string mailAddress)
+        {
+            var signupMail = await mailHost.GetMegaSignupMail(mailAddress).ConfigureAwait(false);
+            var start = signupMail.IndexOf(">https://mega.nz/#confirm", 0, StringComparison.Ordinal);
+            if (start < 0) return string.Empty;
+            start += 1;
+            var end = signupMail.IndexOf("</a>", start, StringComparison.Ordinal);
+            if (end < 0) return string.Empty;
+
+            return signupMail.Substring(start, end - start);
+        }
+
+        internal static async Task<bool> VerifyAccount(string verifyCommand, string validationUrl)
+        {
+            var processInfo = new ProcessStartInfo
             {
-                case MailSource.TempMail:
-                    signupMail = await TempMail.GetMegaSignupMail(mailAddress).ConfigureAwait(false);
-                    start1 = signupMail.IndexOf("https://mega.nz/#confirm", 0, StringComparison.Ordinal);
-                    if (start1 < 0) return string.Empty;
-                    end1 = signupMail.IndexOf(Environment.NewLine, start1, StringComparison.Ordinal);
-                    validationUrl = signupMail.Substring(start1, end1 - start1);
-                    break;
-                case MailSource.Mailinator:
-                    signupMail = await Mailinator.GetMegaSignupMail(mailAddress).ConfigureAwait(false);
-                    start1 = signupMail.IndexOf("<a href=\"https://mega.nz/#confirm", 0, StringComparison.Ordinal);
-                    if (start1 < 0) return string.Empty;
-                    start1 += 9;
-                    end1 = signupMail.IndexOf("\"", start1, StringComparison.Ordinal);
-                    validationUrl = signupMail.Substring(start1, end1 - start1);
-                    break;
-            }
+                FileName = @"megatools/megareg.exe",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
 
-            processInfo.Arguments = verifyCommand + validationUrl;
-
-            var verifyResult = await Task.Run(() =>
+            processInfo.Arguments = verifyCommand + " " + validationUrl;
+            return await Task.Run(() =>
             {
                 using (var process = Process.Start(processInfo))
                 {
-                    using (var reader = process.StandardOutput)
+                    var result = process.StandardOutput.ReadToEnd();
+                    if (string.IsNullOrEmpty(result))
                     {
-                        var result = reader.ReadToEnd();
-                        return result.Contains("successfully");
+                        var error = process.StandardError.ReadToEnd();
+                        logger.Error(error);
+                        return false;
                     }
+                    return result.IndexOf("successfully", StringComparison.OrdinalIgnoreCase) >= 0;
                 }
             }).ConfigureAwait(false);
-
-            return verifyResult? mailAddress : string.Empty;
         }
     }
 }

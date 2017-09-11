@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharingWorker.Video;
 
-namespace VideoTest.Info
+namespace SharingWorkerTest.VideoInfo
 {
     [TestClass, TestCategory("Western Info")]
     public class WesternInfoTest
@@ -13,7 +13,7 @@ namespace VideoTest.Info
         {
             var info = await WesternInfo.GetLegalPorno("SZ1726");
             Trace.WriteLine(info.Title);
-            info = await WesternInfo.GetLegalPorno("GIO431");
+            info = await WesternInfo.GetLegalPorno("GIO432");
             Trace.WriteLine(info.Title);
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
@@ -22,7 +22,7 @@ namespace VideoTest.Info
         [TestMethod]
         public async Task TestZTOD()
         {
-            var info = await WesternInfo.GetZTOD("ZTOD_21712");
+            var info = await WesternInfo.GetZTOD("ZTOD_lauren-phillips-digs-salsa-also-and-spanish-dick");
             Trace.WriteLine(info.Title);
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
@@ -42,10 +42,10 @@ namespace VideoTest.Info
         [TestMethod]
         public async Task TestTeamSkeet()
         {
-            var info = await WesternInfo.GetTeamSkeet("TS_tickets_to_the_ass");
+            var info = await WesternInfo.GetTeamSkeet("TS_country_biscuit_gets");
             Trace.WriteLine(info.Title);
 
-            info = await WesternInfo.GetTeamSkeet("TS_anal_seduction");
+            info = await WesternInfo.GetTeamSkeet("TS_gotta_work_for");
             Trace.WriteLine(info.Title);
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
@@ -151,6 +151,15 @@ namespace VideoTest.Info
         }
 
         [TestMethod]
+        public async Task TestDarkX()
+        {
+            var info = await WesternInfo.GetDarkX("DX_127066");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
+
+        [TestMethod]
         public async Task TestAnalized()
         {
             var info = await WesternInfo.GetAnalized("Analized_Zoey-Madelyn-Monroe-Part1");
@@ -216,6 +225,30 @@ namespace VideoTest.Info
             info = await WesternInfo.GetSPIZOO("SPIZOO_The-Ring-Fight");
             Trace.WriteLine(info.Title);
             
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
+
+        [TestMethod]
+        public async Task TestHushPass()
+        {
+            var info = await WesternInfo.GetHushPass("HushPass_young-blonde-haley-reamed-inside-out");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetHushPass("HushPass_blonde-riley-reyes-takes-a-cock-stuffing");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
+
+        [TestMethod]
+        public async Task TestDDFNetwork()
+        {
+            var info = await WesternInfo.GetDDFNetwork("DDF_20486");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetDDFNetwork("DDF_21125");
+            Trace.WriteLine(info.Title);
+
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
     }

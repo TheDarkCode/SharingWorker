@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SharingWorker.Video;
 
-namespace VideoTest.Cover
+namespace SharingWorkerTest.VideoCover
 {
     [TestClass, TestCategory("Video Cover")]
     public class VideoCoverTest
@@ -15,9 +10,9 @@ namespace VideoTest.Cover
         [TestMethod]
         public async Task TestDmm()
         {
-            var url = await VideoCover.QueryDmmImage("MIAE057");
+            var url = await SharingWorker.Video.VideoCover.QueryDmmImage("MIAE057");
             Trace.WriteLine(url);
-            url = await VideoCover.QueryDmmImage("SNIS909");
+            url = await SharingWorker.Video.VideoCover.QueryDmmImage("SNIS909");
             Trace.WriteLine(url);
             Assert.IsTrue(!string.IsNullOrEmpty(url));
         }

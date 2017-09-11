@@ -1,11 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharingWorker.Video;
 
-namespace VideoTest.Cover
+namespace SharingWorkerTest.VideoCover
 {
     [TestClass, TestCategory("SiroutoDouga Cover")]
     public class SiroutoDougaTest

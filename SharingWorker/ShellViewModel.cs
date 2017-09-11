@@ -29,7 +29,7 @@ namespace SharingWorker
         private readonly IWindowManager windowManager;
 
         [ImportingConstructor]
-        public ShellViewModel(IWindowManager windowManager)
+        public ShellViewModel(IWindowManager windowManager, [ImportMany] IEnumerable<IMailHost> mailHosts)
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             this.DisplayName = string.Format("Sharing Worker {0}.{1}.{2}", version.Major, version.Minor, version.Build);
@@ -44,7 +44,7 @@ namespace SharingWorker
             LoadConfig(PixSense);
             
             GetMega = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Mega"))["Enabled"]);
-            GetBigfile = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Bigfile"))["Enabled"]);
+            GetUploadGIG = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("UploadGIG"))["Enabled"]);
             GetDatafile = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Datafile"))["Enabled"]);
             GetRapidgator = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Rapidgator"))["Enabled"]);
 
@@ -58,8 +58,8 @@ namespace SharingWorker
             GetCover = true;
             RarList = new RarListViewModel();
 
-            MailSource = Enum.GetValues(typeof(MailSource)).Cast<MailSource>().Random();
-
+            MailHosts = new List<IMailHost>(mailHosts);
+            
             this.windowManager = windowManager;
         }
 
@@ -97,13 +97,6 @@ namespace SharingWorker
                         uploadInfo.UploadList.Add(uploadImage);
                 }
             }
-
-            //await PixSense.LogIn();
-            //if (PixSense.LoggedIn)
-            //{
-            //    var u = await PixSense.Upload(UploadResults.First().UploadList);
-            //    Console.WriteLine(u);
-            //}
         }
 
         public async void StartLogin()
@@ -115,7 +108,7 @@ namespace SharingWorker
             if (PixSense.Enabled) flag |= LoginFlag.PixSense;
             if (GetMega) flag |= LoginFlag.MEGA;
             if (GetRapidgator) flag |= LoginFlag.Rapidgator;
-            if (GetBigfile) flag |= LoginFlag.Bigfile;
+            if (GetUploadGIG) flag |= LoginFlag.UploadGIG;
             if (GetDatafile) flag |= LoginFlag.Datafile;
 
             if (await Login(flag))
@@ -151,11 +144,11 @@ namespace SharingWorker
                     loginTasks.Add(rapidgatorLoginTask);
                 }
 
-                Task<bool> bigfileLoginTask = null;
-                if (!BigfileLoggedIn && flag.HasFlag(LoginFlag.Bigfile))
+                Task<bool> uploadGIGLoginTask = null;
+                if (!UploadGIGLoggedIn && flag.HasFlag(LoginFlag.UploadGIG))
                 {
-                    bigfileLoginTask = Bigfile.LogIn();
-                    loginTasks.Add(bigfileLoginTask);
+                    uploadGIGLoginTask = UploadGIG.LogIn();
+                    loginTasks.Add(uploadGIGLoginTask);
                 }
 
                 Task<bool> datafileLoginTask = null;
@@ -178,8 +171,8 @@ namespace SharingWorker
                     MegaLoggedIn =await megaLoginTask;
                 if (rapidgatorLoginTask != null)
                     RapidgatorLoggedIn = await rapidgatorLoginTask;
-                if (bigfileLoginTask != null)
-                    BigfileLoggedIn = await bigfileLoginTask;
+                if (uploadGIGLoginTask != null)
+                    UploadGIGLoggedIn = await uploadGIGLoginTask;
                 if (datafileLoginTask != null)
                     DatafileLoggedIn = await datafileLoginTask;
                 if (blogLoginTask != null)
@@ -199,7 +192,7 @@ namespace SharingWorker
             if (flag.HasFlag(LoginFlag.PixSense)) ret &= PixSense.LoggedIn;
             if (flag.HasFlag(LoginFlag.MEGA)) ret &= MegaLoggedIn;
             if (flag.HasFlag(LoginFlag.Rapidgator)) ret &= RapidgatorLoggedIn;
-            if (flag.HasFlag(LoginFlag.Bigfile)) ret &= BigfileLoggedIn;
+            if (flag.HasFlag(LoginFlag.UploadGIG)) ret &= UploadGIGLoggedIn;
             if (flag.HasFlag(LoginFlag.Datafile)) ret &= DatafileLoggedIn;
             if (flag.HasFlag(LoginFlag.Blogger)) ret &= BloggerLoggedIn;
             CanUpload = ret;
@@ -219,7 +212,7 @@ namespace SharingWorker
             {
                 var megaLinks = MEGA.GetEnabled ? await MEGA.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
                 var rapidgatorLinks = Rapidgator.GetEnabled ? await Rapidgator.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
-                var bigfileLinks = Bigfile.GetEnabled ? await Bigfile.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
+                var uploadGIGLinks = UploadGIG.GetEnabled ? await UploadGIG.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
                 var datafileLinks = Datafile.GetEnabled ? await Datafile.GetLinks(uploadInfo.Id) : Enumerable.Empty<string>();
 
                 if (MEGA.GetEnabled && !megaLinks.Any())
@@ -232,9 +225,9 @@ namespace SharingWorker
                     uploadInfo.Id += "\n(No Rapidgator links!)";
                     continue;
                 }
-                if (Bigfile.GetEnabled && !bigfileLinks.Any())
+                if (UploadGIG.GetEnabled && !uploadGIGLinks.Any())
                 {
-                    uploadInfo.Id += "\n(No Bigfile links!)";
+                    uploadInfo.Id += "\n(No UploadGIG links!)";
                     continue;
                 }
                 if (Datafile.GetEnabled && !datafileLinks.Any())
@@ -248,9 +241,9 @@ namespace SharingWorker
                     uploadInfo.Id += "\n(Missing some Mega/Rapidgator links!)";
                     continue;
                 }
-                if (MEGA.GetEnabled && Bigfile.GetEnabled && megaLinks.Count() != bigfileLinks.Count())
+                if (MEGA.GetEnabled && UploadGIG.GetEnabled && megaLinks.Count() != uploadGIGLinks.Count())
                 {
-                    uploadInfo.Id += "\n(Missing some Mega/Bigfile links!)";
+                    uploadInfo.Id += "\n(Missing some Mega/UploadGIG links!)";
                     continue;
                 }
                 if (MEGA.GetEnabled && Datafile.GetEnabled && datafileLinks.Count() != datafileLinks.Count())
@@ -320,13 +313,17 @@ namespace SharingWorker
                     {
                         await uploadInfo.WriteOutput(string.Join("\\n", megaLinks), string.Join("\\n", rapidgatorLinks));
                     }
-                    else if (Bigfile.GetEnabled)
+                    else if (UploadGIG.GetEnabled)
                     {
-                        await uploadInfo.WriteOutput(string.Join("\\n", megaLinks), string.Join("\\n", bigfileLinks));
+                        await uploadInfo.WriteOutput(string.Join("\\n", megaLinks), string.Join("\\n", uploadGIGLinks));
                     }
                     else if (Datafile.GetEnabled)
                     {
                         await uploadInfo.WriteOutput(string.Join("\\n", megaLinks), string.Join("\\n", datafileLinks));
+                    }
+                    else
+                    {
+                        await uploadInfo.WriteOutput(string.Join("\\n", megaLinks), string.Join("\\n", rapidgatorLinks));
                     }
                 }
                 catch (Exception ex)
@@ -484,21 +481,22 @@ namespace SharingWorker
             }
         }
 
-        public async void CreateMegaAccount()
+        public async void CreateMegaAccount(object sender)
         {
-            Message = "Create new mega account...";
-            var account = await MEGA.CreateNewAccount(MailSource);
+            var mailHost = sender as IMailHost;
+            if(mailHost == null) return;
             
+            Message = "Create new mega account...";
+            var account = await MEGA.CreateNewAccount(mailHost);
+
             if (string.IsNullOrEmpty(account))
             {
                 Message = "Failed to create account!";
                 return;
             }
-            
-            if (MEGA.SetAccountInfo(account))
-                Message = "Account created & set!";
-            else
-                Message = "Account created but failed to set!";
+
+            Message = MEGA.SetAccountInfo(account) ? 
+                "Account created & set!" : "Account created but failed to set!";
         }
 
         public void Closing()

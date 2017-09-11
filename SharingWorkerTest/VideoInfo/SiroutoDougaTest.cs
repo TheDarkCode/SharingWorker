@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharingWorker.Video;
 
-namespace VideoTest.Info
+namespace SharingWorkerTest.VideoInfo
 {
     [TestClass, TestCategory("SiroutoDouga Info")]
     public class SiroutoDougaTest
