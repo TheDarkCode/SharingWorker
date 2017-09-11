@@ -14,7 +14,7 @@ namespace SharingWorker.MailHost
         protected static readonly NLog.Logger logger = LogManager.GetCurrentClassLogger();
         protected static readonly Random Rnd = new Random();
         
-        public virtual string Name { get; set; }
+        public abstract string Name { get; }
 
         private bool isSelected;
         public bool IsSelected

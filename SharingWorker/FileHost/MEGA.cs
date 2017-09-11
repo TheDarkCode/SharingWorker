@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -286,7 +287,14 @@ namespace SharingWorker.FileHost
             var end = signupMail.IndexOf("</a>", start, StringComparison.Ordinal);
             if (end < 0) return string.Empty;
 
-            return signupMail.Substring(start, end - start);
+            var ignoreWords = new List<string>
+            {
+                "<br>","</br>","<wbr>","</wbr>","<br />","<wbr />"
+            };
+
+            var ret = signupMail.Substring(start, end - start);
+            var regex = new Regex(string.Join("|", ignoreWords.Select(s => Regex.Escape(s))));
+            return regex.Replace(ret, string.Empty);
         }
 
         internal static async Task<bool> VerifyAccount(string verifyCommand, string validationUrl)

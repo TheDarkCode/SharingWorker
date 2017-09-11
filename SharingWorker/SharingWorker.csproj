@@ -226,7 +226,7 @@
     <Compile Include="MailHost\IMailHost.cs" />
     <Compile Include="MailHost\MailHostBase.cs" />
     <Compile Include="MailHost\Nada.cs" />
-    <Compile Include="MailHost\TempMail.cs" />
+    <Compile Include="MailHost\TempMailRu.cs" />
     <Compile Include="Post\Blogger.cs" />
     <Compile Include="MahDialog.cs" />
     <Compile Include="MahWindowManager.cs" />
