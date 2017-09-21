@@ -251,5 +251,17 @@ namespace SharingWorkerTest.VideoInfo
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
+
+        [TestMethod]
+        public async Task TestBANG()
+        {
+            var info = await WesternInfo.GetBANG("BANG_5941a5fb5cb3c563ac3c9a4f");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetBANG("BANG_581fa894d947081de9414811");
+            Trace.WriteLine(info.Title);
+            
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
     }
 }
