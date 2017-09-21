@@ -49,6 +49,7 @@ namespace SharingWorker.Video
             { "HushPass_", GetHushPass },
             { "DDF_", GetDDFNetwork },
             { "BANG_", GetBANG },
+            { "POVD_", GetPOVD },
         };
 
         public static bool Match(string id)
@@ -1395,6 +1396,49 @@ namespace SharingWorker.Video
                     ret.Actresses = ret.Actresses.RemoveEnd(", ");
                 
                 ret.Title = string.Format("[BANG!] {0}", ret.Title.TrimEnd());
+            }
+            return ret;
+        }
+
+        public static async Task<VideoInfo> GetPOVD(string id)
+        {
+            var url = string.Empty;
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace("POVD_", string.Empty);
+
+            url = string.Format("https://povd.com/video/{0}", num);
+            using (var handler = new HttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                var responseString = await client.GetStringAsync(url);
+
+                var search = "<h3 class=\"text-primary\">";
+                var start = responseString.IndexOf(search, 0, StringComparison.Ordinal);
+                if (start >= 0)
+                {
+                    start = start + search.Length;
+                    var end = responseString.IndexOf("</h3>", start, StringComparison.Ordinal);
+                    if (end >= 0)
+                    {
+                        ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
+                        start = responseString.IndexOf("<p>", end, StringComparison.Ordinal);
+                        end = responseString.IndexOf("</p>", start, StringComparison.Ordinal);
+
+                        var namesStr = responseString.Substring(start, end - start);
+                        search = "\">";
+                        foreach (var nameStart in namesStr.AllIndexesOf(search))
+                        {
+                            var aStart = nameStart + search.Length;
+                            var aEnd = namesStr.IndexOf("</a>", nameStart, StringComparison.Ordinal);
+                            var actress = namesStr.Substring(aStart, aEnd - aStart).TrimEnd();
+                            ret.Actresses += string.Format("{0}, ", actress);
+                        }
+                        if (ret.Actresses != null)
+                            ret.Actresses = ret.Actresses.RemoveEnd(", ");
+
+                        ret.Title = string.Format("[POVD] {0} - {1}", ret.Title, ret.Actresses);
+                    }
+                }
             }
             return ret;
         }

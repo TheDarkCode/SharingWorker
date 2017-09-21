@@ -217,6 +217,18 @@ namespace SharingWorkerTest.VideoInfo
         }
 
         [TestMethod]
+        public async Task TestPOVD()
+        {
+            var info = await WesternInfo.GetPOVD("POVD_morning-workout");
+            Trace.WriteLine(info.Title);
+
+            info = await WesternInfo.GetPOVD("POVD_in-the-city-with-lily");
+            Trace.WriteLine(info.Title);
+
+            Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+        }
+
+        [TestMethod]
         public async Task TestSPIZOO()
         {
             var info = await WesternInfo.GetSPIZOO("SPIZOO_Riley-Reyes-College-Fan");
