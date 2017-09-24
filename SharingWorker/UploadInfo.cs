@@ -434,6 +434,7 @@ namespace SharingWorker
 
                 GenerateJavLibrary(ouoLink, fileSize, fileFormat, imageCode);
                 GenerateWestern(ouoLink, shinkinLink, fileSize, fileFormat, imageCode);
+                GeneratePornBB(ouoLink, shinkinLink, fileSize, fileFormat, imageCode);
             }
             catch (Exception ex)
             {
@@ -554,27 +555,13 @@ namespace SharingWorker
 
             File.AppendAllText(outputPath_lh, content);
             File.AppendAllText(outputPath_l, content.Replace(Environment.NewLine + "[hide]", string.Empty).Replace("[/hide]" + Environment.NewLine, string.Empty));
-
-    //        var blogLinks = ShinkIn.GetEnabled
-    //? string.Format("<a href=\"{0}\">{0}</a>", cashLinks) : cashLinks;
-
-    //        content = string.Format("{0} ({1})", videoInfoTw.Title, outputId) + Environment.NewLine + Environment.NewLine +
-    //                "<div style='text-align: center;'>" +
-    //                imageCodeBlog +
-    //                "</div>" +
-    //                string.Format("Download(Mega.nz, {0}) : < br />< !--more-- > ", SecondHostName) +
-    //                blogLinks
-    //                + Environment.NewLine + Environment.NewLine +
-    //                "==" + Environment.NewLine + Environment.NewLine;
-
-    //        File.AppendAllText(outputPath_blog, content);
         }
 
-        private void GenerateWestern(string ouoLink, string shinkLink, string fileSize, string fileFormat, string imageCode)
+        private void GenerateWestern(string ouoLink, string shinkLink, string fileSize, string fileFormat, string imageCode, string outputName = @"\west.txt")
         {
             shinkLink = shinkLink.Replace("shink.in", "shink.me");
 
-            var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\west.txt";
+            var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + outputName;
             var content = string.Format(@"{0}
 
 Size: {1}
@@ -590,6 +577,16 @@ or
 ", imageCode, fileSize, fileFormat, SecondHostName, shinkLink, ouoLink);
 
             File.AppendAllText(outputPath, content);
+        }
+
+        private void GeneratePornBB(string ouoLink, string shinkLink, string fileSize, string fileFormat, string imageCode)
+        {
+            if (imageCode.Contains("pixsense")) return;
+            if (imageCode.Contains("imgrock"))
+            {
+                imageCode = ForumLinks1;
+            }
+            GenerateWestern(ouoLink, shinkLink, fileSize, fileFormat, imageCode, @"\west_pornbb.txt");
         }
 
         private void GenerateJavLibrary(string shortLink, string fileSize, string fileFormat, string imageCode)
