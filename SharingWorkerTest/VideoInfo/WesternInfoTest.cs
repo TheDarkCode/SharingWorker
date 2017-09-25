@@ -211,5 +211,13 @@ namespace SharingWorkerTest.VideoInfo
             await Test(info, "BANG_5941a5fb5cb3c563ac3c9a4f");
             await Test(info, "BANG_581fa894d947081de9414811");
         }
+
+        [TestMethod]
+        public async Task TestNubilesPorn()
+        {
+            var info = new NubilesPorn();
+            await Test(info, "Nubiles-Porn_48120");
+            await Test(info, "Nubiles-Porn_40188");
+        }
     }
 }
