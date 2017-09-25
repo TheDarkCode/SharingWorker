@@ -219,5 +219,13 @@ namespace SharingWorkerTest.VideoInfo
             await Test(info, "Nubiles-Porn_48120");
             await Test(info, "Nubiles-Porn_40188");
         }
+
+        [TestMethod]
+        public async Task TestCherryPimps()
+        {
+            var info = new CherryPimps();
+            await Test(info, "CherryPimps_15525-natashastarr");
+            await Test(info, "CherryPimps_15920-whitneywright");
+        }
     }
 }

@@ -233,6 +233,7 @@
     <Compile Include="Video\IVideoInfo.cs" />
     <Compile Include="Video\Western\Analized.cs" />
     <Compile Include="Video\Western\BANG.cs" />
+    <Compile Include="Video\Western\CherryPimps.cs" />
     <Compile Include="Video\Western\DDFNetwork.cs" />
     <Compile Include="Video\Western\EvilAngel.cs" />
     <Compile Include="Video\Western\HushHushEntertainment.cs" />
