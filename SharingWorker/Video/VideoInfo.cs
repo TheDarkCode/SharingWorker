@@ -1063,9 +1063,8 @@ namespace SharingWorker.Video
                                 var title = responseString.Substring(start, end - start);
                                 var removeIdx = title.LastIndexOf(" -", StringComparison.OrdinalIgnoreCase);
                                 if (removeIdx > 0)
-                                    title = title.Substring(0, removeIdx);
+                                    title = HttpUtility.HtmlDecode(title.Substring(0, removeIdx));
                                 
-                                title = title.Replace("&#45;", "-");
                                 ret.Title = string.Format("Heydouga {0} {1}", num, title);
 
                                 var actStart = title.LastIndexOf("- ");
