@@ -230,6 +230,20 @@
     <Compile Include="Post\Blogger.cs" />
     <Compile Include="MahDialog.cs" />
     <Compile Include="MahWindowManager.cs" />
+    <Compile Include="Video\IVideoInfo.cs" />
+    <Compile Include="Video\Western\Analized.cs" />
+    <Compile Include="Video\Western\BANG.cs" />
+    <Compile Include="Video\Western\DDFNetwork.cs" />
+    <Compile Include="Video\Western\EvilAngel.cs" />
+    <Compile Include="Video\Western\HushHushEntertainment.cs" />
+    <Compile Include="Video\Western\JulesJordan.cs" />
+    <Compile Include="Video\Western\JulesJordanVideo.cs" />
+    <Compile Include="Video\Western\NubileFilms.cs" />
+    <Compile Include="Video\Western\SPIZOO.cs" />
+    <Compile Include="Video\Western\TeamSkeet.cs" />
+    <Compile Include="Video\Western\TeenErotica.cs" />
+    <Compile Include="Video\Western\WesternInfoAttribute.cs" />
+    <Compile Include="Video\IVideoInfoMetadata.cs" />
     <Compile Include="Video\RealStreetAngels.cs" />
     <Compile Include="Video\SiroutoDouga.cs" />
     <Compile Include="Video\VideoCover.cs" />
@@ -252,7 +266,20 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
     <Compile Include="UploadInfo.cs" />
+    <Compile Include="Video\Western\21Members.cs" />
+    <Compile Include="Video\Western\Babes.cs" />
+    <Compile Include="Video\Western\BangBros.cs" />
+    <Compile Include="Video\Western\Brazzers.cs" />
+    <Compile Include="Video\Western\KINK.cs" />
+    <Compile Include="Video\Western\LegalPorno.cs" />
+    <Compile Include="Video\Western\MOFOS.cs" />
+    <Compile Include="Video\Western\NaughtyAmerica.cs" />
+    <Compile Include="Video\Western\WhaleMemberLtd.cs" />
     <Compile Include="Video\WesternInfo.cs" />
+    <Compile Include="Video\Western\RealityKings.cs" />
+    <Compile Include="Video\Western\GeneralMediaSystems.cs" />
+    <Compile Include="Video\Western\XEmpire.cs" />
+    <Compile Include="Video\Western\ZTOD.cs" />
     <Page Include="Video\RarListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

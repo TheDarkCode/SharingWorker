@@ -12,7 +12,7 @@ namespace SharingWorker
 {
     class MefBootstrapper : BootstrapperBase
     {
-        private CompositionContainer container;
+        private static CompositionContainer container;
 
         public MefBootstrapper()
         {
@@ -35,7 +35,7 @@ namespace SharingWorker
         {
             var contract = string.IsNullOrEmpty(key) ? AttributedModelServices.GetContractName(serviceType) : key;
             var exports = container.GetExportedValues<object>(contract);
-
+            
             if (exports.Any())
                 return exports.First();
 
@@ -60,6 +60,18 @@ namespace SharingWorker
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
             DisplayRootViewFor<IShell>();
+        }
+
+        public static IEnumerable<T> GetAllInstances<T>(string key = null)
+        {
+            var contract = string.IsNullOrEmpty(key) ? AttributedModelServices.GetContractName(typeof(T)) : key;
+            return container.GetExportedValues<T>(contract);
+        }
+
+        public static IEnumerable<Lazy<T, TMetadata>> GetAllInstances<T, TMetadata>(string key = null)
+        {
+            var contract = string.IsNullOrEmpty(key) ? AttributedModelServices.GetContractName(typeof(T)) : key;
+            return container.GetExports<T, TMetadata>(contract);
         }
     }
 }
