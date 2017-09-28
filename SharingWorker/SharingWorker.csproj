@@ -209,16 +209,15 @@
     </ApplicationDefinition>
     <Compile Include="BindableListBox.cs" />
     <Compile Include="BindableListView.cs" />
-    <Compile Include="FileHost\Coinlink.cs" />
     <Compile Include="FileHost\Datafile.cs" />
-    <Compile Include="FileHost\Elink.cs" />
-    <Compile Include="FileHost\Ouo.cs" />
-    <Compile Include="FileHost\PayUrl.cs" />
+    <Compile Include="UrlShortening\IUrlShortening.cs" />
+    <Compile Include="UrlShortening\Ouo.cs" />
+    <Compile Include="UrlShortening\Ourl.cs" />
     <Compile Include="FileHost\Rapidgator.cs" />
-    <Compile Include="FileHost\ShinkIn.cs" />
-    <Compile Include="FileHost\ShorteSt.cs" />
+    <Compile Include="UrlShortening\ShinkIn.cs" />
+    <Compile Include="UrlShortening\ShorteSt.cs" />
     <Compile Include="FileHost\UploadGIG.cs" />
-    <Compile Include="FileHost\Urle.cs" />
+    <Compile Include="UrlShortening\Urle.cs" />
     <Compile Include="ImageHost\ImgDrive.cs" />
     <Compile Include="ImageHost\ImageTwist.cs" />
     <Compile Include="ImageHost\ImgRock.cs" />
@@ -230,6 +229,7 @@
     <Compile Include="Post\Blogger.cs" />
     <Compile Include="MahDialog.cs" />
     <Compile Include="MahWindowManager.cs" />
+    <Compile Include="UrlShortening\UrlShortening.cs" />
     <Compile Include="Video\IVideoInfo.cs" />
     <Compile Include="Video\Western\Analized.cs" />
     <Compile Include="Video\Western\BANG.cs" />
@@ -362,6 +362,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /y "$(ProjectDir)Logger\NLog.config" "$(TargetDir)"

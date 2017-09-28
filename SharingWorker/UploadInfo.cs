@@ -10,6 +10,7 @@ using System.Windows.Media;
 using Caliburn.Micro;
 using SharingWorker.FileHost;
 using SharingWorker.Post;
+using SharingWorker.UrlShortening;
 using SharingWorker.Video;
 
 namespace SharingWorker
@@ -36,8 +37,10 @@ namespace SharingWorker
 
     class UploadInfo : PropertyChangedBase
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private static int imageHostIndex;
         private static readonly Random rnd = new Random();
+        private static readonly IEnumerable<IUrlShortening> urlShortenings = IoC.GetAll<IUrlShortening>();
 
         public static string SecondHostName
         {
@@ -247,7 +250,7 @@ namespace SharingWorker
                 NotifyOfPropertyChange(() => ForumLinks4);
             }
         }
-
+        
         public async Task WriteOutput(string megaLinks, string rgLinks)
         {
             string imageCode = null;
@@ -316,7 +319,7 @@ namespace SharingWorker
                     imageCodeBlog = wlinks.Where(l => l.Key != imgCodeIndex && !string.IsNullOrEmpty(l.Value)).Select(l => l.Value).Random();
                 }
             }
-            
+
             imageHostIndex++;
 
             try
@@ -342,8 +345,8 @@ namespace SharingWorker
                     fileSize = VideoUtil.GetFileSizeGB(uploadPath, id) + "GB";
                 }
 
-                //
-                if (ShinkIn.GetEnabled && !string.IsNullOrEmpty(megaLinks))
+                var firstLinkSht = urlShortenings.FirstOrDefault(u => u.FirstLinkEnabled);
+                if (firstLinkSht != null && !string.IsNullOrEmpty(megaLinks))
                 {
                     var allLinks = megaLinks.Split(new string[] { "\\n" }, StringSplitOptions.None);
                     var firstLine = true;
@@ -352,13 +355,9 @@ namespace SharingWorker
                     {
                         if (firstLine)
                         {
-                            var firstLink = await Ouo.GetLink(link);
-                            if (string.IsNullOrEmpty(firstLink) || firstLink.Length > 30)
-                            {
-                                firstLink = await ShinkIn.GetLink(link);
-                                if (string.IsNullOrEmpty(firstLink))
-                                    firstLink = link;
-                            }
+                            var firstLink = await firstLinkSht.GetLink(link);
+                            if (string.IsNullOrEmpty(firstLink))
+                                firstLink = link;
 
                             sb.Append(string.Format("{0}\\n", firstLink));
                             firstLine = false;
@@ -370,10 +369,9 @@ namespace SharingWorker
                     }
                     megaLinks = sb.ToString().TrimEnd("\\n".ToCharArray());
                 }
-                
 
                 string links1 = null, links2 = null;
-                switch (rnd.Next(0, 1000)%2)
+                switch (rnd.Next(0, 1000) % 2)
                 {
                     case 0:
                         links1 = megaLinks;
@@ -399,61 +397,38 @@ namespace SharingWorker
                     Id = id,
                     Links = contentBackup,
                 };
-
-                var shinkinLink = string.Empty;
-                var ouoLink = string.Empty;
-
+                
                 var linksPage = Blogger.CreateLinksPost(content);
+                var shortenedLinks = new List<string>();
                 if (string.IsNullOrEmpty(linksPage))
                 {
                     await
-                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored);
+                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored, shortenedLinks);
                 }
                 else
                 {
-                    if (ShinkIn.GetEnabled && Ouo.GetEnabled)
+                    foreach (var urlShortening in urlShortenings.Where(u => u.Enabled))
                     {
-                        shinkinLink = await GetLinksPageShink(linksPage);
-                        ouoLink = await Ouo.GetLink(linksPage);
-                    }
-                    else if (ShinkIn.GetEnabled && !Ouo.GetEnabled)
-                    {
-                        shinkinLink = await GetLinksPageShink(linksPage);
-                    }
-                    else if (!ShinkIn.GetEnabled && Ouo.GetEnabled)
-                    {
-                        ouoLink = await Ouo.GetLink(linksPage);
+                        var shortenedLink = await urlShortening.GetLink(linksPage);
+                        if (!string.IsNullOrEmpty(shortenedLink))
+                            shortenedLinks.Add(shortenedLink);
                     }
 
                     await
-                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored, shinkinLink, ouoLink);
+                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored, shortenedLinks);
                 }
 
-                if (!string.IsNullOrEmpty(linksPage) && string.IsNullOrEmpty(ouoLink))
-                    ouoLink = await Ouo.GetLink(linksPage);
-
-                GenerateJavLibrary(ouoLink, fileSize, fileFormat, imageCode);
-                GenerateWestern(ouoLink, shinkinLink, fileSize, fileFormat, imageCode);
-                GeneratePornBB(ouoLink, shinkinLink, fileSize, fileFormat, imageCode);
+                GenerateJavLibrary(shortenedLinks.Where(l => !l.Contains("shink")), fileSize, fileFormat, imageCode);
+                GenerateWestern(shortenedLinks, fileSize, fileFormat, imageCode);
+                GeneratePornBB(shortenedLinks, fileSize, fileFormat, imageCode);
             }
             catch (Exception ex)
             {
-                App.Logger.Error(ex.Message);
+                logger.ErrorException(ex.Message, ex);
             }
         }
 
-        private async Task<string> GetLinksPageShink(string linksPage)
-        {
-            var ret = await ShinkIn.GetLink(linksPage);
-            if (string.IsNullOrEmpty(ret) || ret.Length > 30)
-            {
-                await Task.Delay(3000);
-                ret = await ShinkIn.GetLink(linksPage);
-            }
-            return ret;
-        }
-
-        private void GenerateBlogPost(string outputId, string imageCodeBlog, string linksPage, string shinkinLink, string ouoLink, LinksBackup linksBackup, VideoInfo videoInfo)
+        private void GenerateBlogPost(string outputId, string imageCodeBlog, string linksPage, IEnumerable<string> shortenedLinks, LinksBackup linksBackup, VideoInfo videoInfo)
         {
             string blogTitle;
             if (videoInfo.Title.Contains("Tokyo Hot"))
@@ -471,19 +446,20 @@ namespace SharingWorker
                     string.Format("[{0}] {1}", outputId, videoInfo.Title);
             }
 
-            var linksContent = linksPage;
-            if (!string.IsNullOrEmpty(shinkinLink) && !string.IsNullOrEmpty(ouoLink))
+            string linksContent = null;
+            foreach (var shortenedLink in shortenedLinks)
             {
-                linksContent = "<a href=\"" + shinkinLink + "\">" + shinkinLink + "</a><br />or<br /><a href=\"" + ouoLink + "\">" + ouoLink + "</a>";
+                if (string.IsNullOrEmpty(linksContent))
+                {
+                    linksContent = "<a href=\"" + shortenedLink + "\">" + shortenedLink + "</a>";
+                }
+                else
+                {
+                    linksContent += "<br />or<br /><a href=\"" + shortenedLink + "\">" + shortenedLink + "</a>";
+                }
             }
-            else if (!string.IsNullOrEmpty(shinkinLink) && string.IsNullOrEmpty(ouoLink))
-            {
-                linksContent = "<a href=\"" + shinkinLink + "\">" + shinkinLink + "</a>";
-            }
-            else if (string.IsNullOrEmpty(shinkinLink) && !string.IsNullOrEmpty(ouoLink))
-            {
-                linksContent = "<a href=\"" + ouoLink + "\">" + ouoLink + "</a>";
-            }
+            if (string.IsNullOrEmpty(linksContent))
+                linksContent = linksPage;
 
             Blogger.AddPost(new Blogger.BlogPost(blogTitle, imageCodeBlog, linksContent, linksBackup));
 
@@ -501,26 +477,28 @@ namespace SharingWorker
 
         private async Task GenerateOutput(string outputId, string fileSize, string fileFormat, string imageCode,
             string imageCodeBlog, string linksPage, LinksBackup linksBackup , bool isCensored,
-            string shinkinLink = null, string ouoLink = null)
+            IEnumerable<string> shortenedLinks)
         {
             var videoInfoTw = await VideoInfo.QueryVideoInfo(outputId, QueryLang.TW);
 
-            GenerateBlogPost(outputId, imageCodeBlog, linksPage, shinkinLink, ouoLink, linksBackup, videoInfoTw);
+            GenerateBlogPost(outputId, imageCodeBlog, linksPage, shortenedLinks, linksBackup, videoInfoTw);
 
             var censored = isCensored ? "有碼" : "無碼";
-            var linksContent = linksPage;
-            if (!string.IsNullOrEmpty(shinkinLink) && !string.IsNullOrEmpty(ouoLink))
+            
+            string linksContent = null;
+            foreach (var shortenedLink in shortenedLinks)
             {
-                linksContent = shinkinLink + Environment.NewLine + "or" + Environment.NewLine + ouoLink;
+                if (string.IsNullOrEmpty(linksContent))
+                {
+                    linksContent = shortenedLink;
+                }
+                else
+                {
+                    linksContent += Environment.NewLine + "or" + Environment.NewLine + shortenedLink;
+                }
             }
-            else if (!string.IsNullOrEmpty(shinkinLink) && string.IsNullOrEmpty(ouoLink))
-            {
-                linksContent = shinkinLink;
-            }
-            else if (string.IsNullOrEmpty(shinkinLink) && !string.IsNullOrEmpty(ouoLink))
-            {
-                linksContent = ouoLink;
-            }
+            if (string.IsNullOrEmpty(linksContent))
+                linksContent = linksPage;
 
             var title = videoInfoTw.HideId ? videoInfoTw.Title 
                 : string.Format("{0} ({1})", videoInfoTw.Title, outputId);
@@ -557,10 +535,11 @@ namespace SharingWorker
             File.AppendAllText(outputPath_l, content.Replace(Environment.NewLine + "[hide]", string.Empty).Replace("[/hide]" + Environment.NewLine, string.Empty));
         }
 
-        private void GenerateWestern(string ouoLink, string shinkLink, string fileSize, string fileFormat, string imageCode, string outputName = @"\west.txt")
+        private void GenerateWestern(IEnumerable<string> shortenedLinks, string fileSize, string fileFormat, string imageCode, string outputName = @"\west.txt")
         {
-            shinkLink = shinkLink.Replace("shink.in", "shink.me");
-
+            var urlContent = GenerateForumUrlContent(shortenedLinks);
+            urlContent = urlContent.Replace("shink.in", "shink.me");
+            
             var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + outputName;
             var content = string.Format(@"{0}
 
@@ -568,45 +547,61 @@ Size: {1}
 Format: {2}
 
 [color=green][b]Download (Mega.nz & {3})：[/b][/color]
-[url]{4}[/url]
-or
-[url]{5}[/url]
+{4}
 
 ==
 
-", imageCode, fileSize, fileFormat, SecondHostName, shinkLink, ouoLink);
+", imageCode, fileSize, fileFormat, SecondHostName, urlContent);
 
             File.AppendAllText(outputPath, content);
         }
 
-        private void GeneratePornBB(string ouoLink, string shinkLink, string fileSize, string fileFormat, string imageCode)
+        private void GeneratePornBB(IEnumerable<string> shortenedLinks, string fileSize, string fileFormat, string imageCode)
         {
             if (imageCode.Contains("pixsense")) return;
             if (imageCode.Contains("imgrock"))
             {
                 imageCode = ForumLinks1;
             }
-            GenerateWestern(ouoLink, shinkLink, fileSize, fileFormat, imageCode, @"\west_pornbb.txt");
+            GenerateWestern(shortenedLinks, fileSize, fileFormat, imageCode, @"\west_pornbb.txt");
         }
 
-        private void GenerateJavLibrary(string shortLink, string fileSize, string fileFormat, string imageCode)
+        private void GenerateJavLibrary(IEnumerable<string> shortenedLinks, string fileSize, string fileFormat, string imageCode)
         {
+            var urlContent = GenerateForumUrlContent(shortenedLinks);
             var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\JavLib.txt";
             var content = string.Format(@"{0}
 
 Size: {1}
 Format: {2}
 
-[color=green][b]Download (Mega.nz & {4})：[/b][/color]
-[url]{3}[/url]
+[color=green][b]Download (Mega.nz & {3})：[/b][/color]
+{4}
 
 [b][color=#cc0000]nanamiyusa's Collection[/color] [/b]: [url=http://blog.epc-jav.com]Erotic Public Cloud[/url]
 
 ==
 
-", imageCode, fileSize, fileFormat, shortLink, SecondHostName);
+", imageCode, fileSize, fileFormat, SecondHostName, urlContent);
 
             File.AppendAllText(outputPath, content);
+        }
+
+        private string GenerateForumUrlContent(IEnumerable<string> shortenedLinks)
+        {
+            string ret = null;
+            foreach (var shortenedLink in shortenedLinks)
+            {
+                if (string.IsNullOrEmpty(ret))
+                {
+                    ret = string.Format("[url]{0}[/url]", shortenedLink);
+                }
+                else
+                {
+                    ret += string.Format("{0}or{0}[url]{1}[/url]", Environment.NewLine, shortenedLink);
+                }
+            }
+            return ret;
         }
 
         public static void WriteSignature(string filePath)

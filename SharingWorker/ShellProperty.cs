@@ -6,6 +6,7 @@ using Caliburn.Micro;
 using SharingWorker.FileHost;
 using SharingWorker.ImageHost;
 using SharingWorker.MailHost;
+using SharingWorker.UrlShortening;
 using SharingWorker.Video;
 
 namespace SharingWorker
@@ -29,6 +30,7 @@ namespace SharingWorker
         public static ImgRock ImgRock { get; set; }
         public static PixSense PixSense { get; set; }
         public List<IMailHost> MailHosts { get; set; }
+        public List<IUrlShortening> UrlShortenings { get; set; }
         public BindableCollection<UploadInfo> UploadResults { get; set; }
         public RarListViewModel RarList { get; set; }
         public static bool IsUploadFinished;
@@ -202,26 +204,6 @@ namespace SharingWorker
             {
                 Datafile.GetEnabled = value;
                 NotifyOfPropertyChange(() => GetDatafile);
-            }
-        }
-
-        public bool GetShinkIn
-        {
-            get { return ShinkIn.GetEnabled; }
-            set
-            {
-                ShinkIn.GetEnabled = value;
-                NotifyOfPropertyChange(() => GetShinkIn);
-            }
-        }
-
-        public bool GetOuo
-        {
-            get { return Ouo.GetEnabled; }
-            set
-            {
-                Ouo.GetEnabled = value;
-                NotifyOfPropertyChange(() => GetOuo);
             }
         }
     }

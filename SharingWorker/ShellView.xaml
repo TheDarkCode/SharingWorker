@@ -1,7 +1,6 @@
 ﻿<mah:MetroWindow x:Class="SharingWorker.ShellView" x:Name="This"
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                 xmlns:b="clr-namespace:SharingWorker.FileHost"
                  xmlns:cal="http://www.caliburnproject.org"
                  xmlns:local="clr-namespace:SharingWorker"
                  xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
@@ -33,19 +32,34 @@
         </Grid.RowDefinitions>
         <Menu FontSize="14">
             <MenuItem Header="Image" VerticalAlignment="Center">
-                <MenuItem Header=" Select Upload Images" cal:Message.Attach="[Event Click] = [Action SelectUploadImages()]"/>
-                <Separator />
-                <MenuItem Header=" ImgChili" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgChili.Enabled}"/>
-                <MenuItem Header=" ImgRock" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgRock.Enabled}"/>
-                <MenuItem Header=" PixSense" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding PixSense.Enabled}"/>
-                <Separator />
-                <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetMega}"/>
-                <MenuItem Header=" UploadGIG" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetUploadGIG}"/>
-                <MenuItem Header=" Rapidgator" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetRapidgator}"/>
-                <MenuItem Header=" Datafile" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetDatafile}"/>
-                <Separator />
-                <MenuItem Header=" Shink.in" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetShinkIn}"/>
-                <MenuItem Header=" Ouo.io" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetOuo}"/>
+                <MenuItem.Resources>
+                    <CollectionViewSource x:Key="UrlShorteningCollection" Source="{Binding UrlShortenings}"/>
+                </MenuItem.Resources>
+                <MenuItem.ItemsSource>
+                    <CompositeCollection>
+                        <MenuItem Header=" Select Upload Images" cal:Message.Attach="[Event Click] = [Action SelectUploadImages()]"
+                                  IsCheckable="False"/>
+                        <Separator />
+                        <MenuItem Header=" ImgChili" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgChili.Enabled}"/>
+                        <MenuItem Header=" ImgRock" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding ImgRock.Enabled}"/>
+                        <MenuItem Header=" PixSense" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding PixSense.Enabled}"/>
+                        <Separator />
+                        <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetMega}"/>
+                        <MenuItem Header=" UploadGIG" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetUploadGIG}"/>
+                        <MenuItem Header=" Rapidgator" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetRapidgator}"/>
+                        <MenuItem Header=" Datafile" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetDatafile}"/>
+                        <Separator />
+                        <CollectionContainer Collection="{Binding Source={StaticResource UrlShorteningCollection}}" />
+                    </CompositeCollection>
+                </MenuItem.ItemsSource>
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                        <Setter Property="Header" Value="{Binding Name}"/>
+                        <Setter Property="IsChecked"  Value="{Binding Enabled}"/>
+                        <Setter Property="IsCheckable" Value="True"/>
+                        <Setter Property="StaysOpenOnClick" Value="True"/>
+                    </Style>
+                </MenuItem.ItemContainerStyle>
             </MenuItem>
             <MenuItem Header="Video">
                 <MenuItem Header=" Select Videos" cal:Message.Attach="[Event Click] = [Action SelectVideos()]"/>

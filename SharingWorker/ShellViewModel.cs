@@ -19,6 +19,7 @@ using SharingWorker.FileHost;
 using SharingWorker.ImageHost;
 using SharingWorker.MailHost;
 using SharingWorker.Post;
+using SharingWorker.UrlShortening;
 using SharingWorker.Video;
 
 namespace SharingWorker
@@ -29,7 +30,9 @@ namespace SharingWorker
         private readonly IWindowManager windowManager;
 
         [ImportingConstructor]
-        public ShellViewModel(IWindowManager windowManager, [ImportMany] IEnumerable<IMailHost> mailHosts)
+        public ShellViewModel(IWindowManager windowManager, 
+            [ImportMany] IEnumerable<IMailHost> mailHosts, 
+            [ImportMany] IEnumerable<IUrlShortening> urlShortenings)
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             this.DisplayName = string.Format("Sharing Worker {0}.{1}.{2}", version.Major, version.Minor, version.Build);
@@ -48,9 +51,6 @@ namespace SharingWorker
             GetDatafile = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Datafile"))["Enabled"]);
             GetRapidgator = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Rapidgator"))["Enabled"]);
 
-            GetShinkIn = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("ShinkIn"))["Enabled"]);
-            GetOuo = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection("Ouo"))["Enabled"]);
-
             Blogger.PostProgressEvent += Blogger_PostProgressEvent;
             
             CompressToRar = true;
@@ -59,6 +59,7 @@ namespace SharingWorker
             RarList = new RarListViewModel();
 
             MailHosts = new List<IMailHost>(mailHosts);
+            UrlShortenings = new List<IUrlShortening>(urlShortenings);
             
             this.windowManager = windowManager;
         }
@@ -392,6 +393,7 @@ namespace SharingWorker
             }
 
             UploadInfo.WriteSignature(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\west.txt");
+            UploadInfo.WriteSignature(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\west_pornbb.txt");
             IsUploadFinished = true;
             Message = "Upload done";
         }

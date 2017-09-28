@@ -46,8 +46,7 @@ namespace SharingWorker.FileHost
             try
             {
                 File.AppendAllText("MegaAccount.txt",
-                    string.Format("{0}{1}   |   {2}", Environment.NewLine,
-                    account, DateTime.Now.ToString("yyyy-MM-dd")));
+                    string.Format("{0}{1}", Environment.NewLine, account));
 
                 var appConfig = XDocument.Load("SharingWorker.exe.config");
                 var megaUser = (from el in appConfig.Descendants("Mega").Descendants("add")
