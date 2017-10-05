@@ -12,7 +12,6 @@ using Google.Apis.Blogger.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Newtonsoft.Json;
-using SharingWorker.FileHost;
 
 namespace SharingWorker.Post
 {
@@ -26,29 +25,22 @@ namespace SharingWorker.Post
                 ImageContent = imageContent;
                 LinksContent = linksContent;
                 LinksBackup = linksBackup;
-                //if (!string.IsNullOrEmpty(rgLinks))
-                //    RgLinks = rgLinks.Replace("\\n", "<br />"); ;
+
             }
             public string Title;
             public string ImageContent;
             public string LinksContent;
-            //public string RgLinks;
             public LinksBackup LinksBackup;
         }
 
-        //private static string apiKey = "{API-KEY}";
-        //private static string blogUrl = "{BLOG-URL}";
         private static Regex rgx = new Regex(".+\\.blogspot\\.[^/]+\\/", RegexOptions.Compiled);
         public static readonly string BlogId = ((NameValueCollection)ConfigurationManager.GetSection("Blogger"))["BlogId"];
         public static readonly string LinksBlogId = ((NameValueCollection)ConfigurationManager.GetSection("Blogger"))["LinksBlogId"];
-        //private static readonly string postUri = string.Format("https://www.blogger.com/feeds/{0}/posts/default", BlogId);
         private static readonly int postInterval = int.Parse(((NameValueCollection)ConfigurationManager.GetSection("Blogger"))["PostInterval"]) * 1000;
         private static readonly ConcurrentQueue<BlogPost> postQueue = new ConcurrentQueue<BlogPost>();
         private static readonly BackgroundWorker postWorker = new BackgroundWorker();
         private static int postCount;
 
-        //private static string clientId = "308480037624-ac96560c6eggvm3bmg4hr2n6pnumhjqh.apps.googleusercontent.com";
-        //private static string clientSecret = "p9V8HF4vjCSzsBJ5uflj720o";
         private static UserCredential credential;
         private static BloggerService service;
         private static UserCredential linksCredential;
@@ -67,21 +59,6 @@ namespace SharingWorker.Post
 
         public static async Task<bool> LogIn()
         {
-            //credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-            //    new ClientSecrets
-            //    {
-            //        ClientId = clientId,
-            //        ClientSecret = clientSecret,
-            //    },
-            //    new[]
-            //    {
-            //        BloggerService.Scope.Blogger
-            //    },
-            //    "user",                               //如果只有一人, 可以使用任何固定字串, 例如: "user"
-            //    CancellationToken.None,
-            //    new FileDataStore("Blogger.Auth.Store")     //用來儲存 Token 的目錄
-            //);
-
             using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
             {
                 credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
@@ -260,60 +237,5 @@ namespace SharingWorker.Post
         //        }
         //    }
         //}
-
-        public static void ReplaceBinbox(string entryUri, string newLink)
-        {
-            //var post = service.Get(entryUri);
-
-            //if (post.Content.Content.IndexOf("https://binbox", StringComparison.OrdinalIgnoreCase) >= 0 ||
-            //    post.Content.Content.IndexOf("http://binbox", StringComparison.OrdinalIgnoreCase) >= 0)
-            //{
-            //    if (newLink.Contains("binbox"))
-            //    {
-            //        foreach (var start in post.Content.Content.AllIndexesOf("https://binbox"))
-            //        {
-            //            var oldBinbox = post.Content.Content.Substring(start, 32);
-            //            post.Content.Content = post.Content.Content.Replace(oldBinbox, newLink);
-            //        }
-            //        foreach (var start in post.Content.Content.AllIndexesOf("http://binbox"))
-            //        {
-            //            var oldBinbox = post.Content.Content.Substring(start, 31);
-            //            post.Content.Content = post.Content.Content.Replace(oldBinbox, newLink);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        var replace = true;
-            //        while (replace)
-            //        {
-            //            var start = post.Content.Content.IndexOf("https://binbox");
-            //            if (start >= 0)
-            //            {
-            //                var oldBinbox = post.Content.Content.Substring(start, 32);
-            //                post.Content.Content = post.Content.Content.Replace(oldBinbox, newLink);
-            //            }
-            //            else
-            //                replace = false;
-            //        }
-
-            //        replace = true;
-            //        while (replace)
-            //        {
-            //            var start = post.Content.Content.IndexOf("http://binbox");
-            //            if (start >= 0)
-            //            {
-            //                var oldBinbox = post.Content.Content.Substring(start, 32);
-            //                post.Content.Content = post.Content.Content.Replace(oldBinbox, newLink);
-            //            }
-            //            else
-            //                replace = false;
-            //        }
-            //    }
-            //}
-
-            //post.Content.Content = post.Content.Content.Replace("<br /><a name='more'></a>", "<br /><hr class=\"more\"></hr>");
-            //post.IsDraft = true;
-            //post.Update();
-        }
     }
 }
