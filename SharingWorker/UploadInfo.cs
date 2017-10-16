@@ -538,7 +538,6 @@ namespace SharingWorker
         private void GenerateWestern(IEnumerable<string> shortenedLinks, string fileSize, string fileFormat, string imageCode, string outputName = @"\west.txt")
         {
             var urlContent = GenerateForumUrlContent(shortenedLinks);
-            urlContent = urlContent.Replace("shink.in", "shink.me");
             
             var outputPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + outputName;
             var content = string.Format(@"{0}
