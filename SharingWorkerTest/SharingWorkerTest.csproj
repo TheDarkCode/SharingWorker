@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="FileHost\UploadGIGTest.cs" />
     <Compile Include="Mega\SignupTest.cs" />
+    <Compile Include="UrlShorteningTest.cs" />
     <Compile Include="VideoCover\VideoCoverTest.cs" />
     <Compile Include="VideoCover\SiroutoDougaTest.cs" />
     <Compile Include="VideoInfo\SiroutoDougaTest.cs" />

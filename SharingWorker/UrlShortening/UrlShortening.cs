@@ -38,7 +38,11 @@ namespace SharingWorker.UrlShortening
 
         public UrlShortening()
         {
-            Enabled = bool.Parse(((NameValueCollection)ConfigurationManager.GetSection(Name))["Enabled"]);
+            var nameSec = ConfigurationManager.GetSection(Name);
+            if (nameSec != null)
+            {
+                Enabled = bool.Parse(((NameValueCollection) nameSec)["Enabled"]);
+            }
         }
 
         public virtual async Task<string> GetLink(string link)

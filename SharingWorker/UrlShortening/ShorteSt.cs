@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -11,9 +9,9 @@ namespace SharingWorker.UrlShortening
 {
     class ShorteSt : UrlShortening
     {
-        private static readonly string apiKey = ((NameValueCollection)ConfigurationManager.GetSection("ShorteSt"))["ApiKey"];
+        private static readonly string apiKey = "5a4c6fe40bd647013ff2dadafb0668ba";
 
-        public override string ApiUrl => ((NameValueCollection)ConfigurationManager.GetSection("ShorteSt"))["ApiUrl"];
+        public override string ApiUrl => "https://api.shorte.st/v1/data/url";
         public override string Name => "ShorteSt";
 
         public override async Task<string> GetLink(string link)

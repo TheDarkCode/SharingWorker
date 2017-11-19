@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.ComponentModel.Composition;
-using System.Configuration;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
@@ -12,7 +10,7 @@ namespace SharingWorker.UrlShortening
     [Export(typeof(IUrlShortening))]
     class ShinkIn : UrlShortening
     {
-        public override string ApiUrl => ((NameValueCollection)ConfigurationManager.GetSection("ShinkIn"))["ApiUrl"];
+        public override string ApiUrl => "http://shink.me/stxt/0/id/90552/auth_token/VEFsRf?s=";
         public override string Name => "ShinkIn";
 
         public override async Task<string> GetLink(string link)

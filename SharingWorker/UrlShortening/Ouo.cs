@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.ComponentModel.Composition;
-using System.Configuration;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
@@ -12,7 +10,7 @@ namespace SharingWorker.UrlShortening
     [Export(typeof(IUrlShortening))]
     class Ouo : UrlShortening
     {
-        public override string ApiUrl => ((NameValueCollection)ConfigurationManager.GetSection("Ouo"))["ApiUrl"];
+        public override string ApiUrl => "http://ouo.io/api/mYNo98PR?s=";
         public override string Name => "Ouo";
         public override bool FirstLinkEnabled => true;
 
