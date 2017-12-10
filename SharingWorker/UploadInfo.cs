@@ -346,7 +346,7 @@ namespace SharingWorker
                 }
 
                 var firstLinkSht = urlShortenings.FirstOrDefault(u => u.FirstLinkEnabled);
-                if (firstLinkSht != null && !string.IsNullOrEmpty(megaLinks))
+                if (firstLinkSht != null && !string.IsNullOrEmpty(megaLinks) && !string.IsNullOrEmpty(rgLinks))
                 {
                     var allLinks = megaLinks.Split(new string[] { "\\n" }, StringSplitOptions.None);
                     var firstLine = true;
@@ -418,7 +418,7 @@ namespace SharingWorker
                         GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored, shortenedLinks);
                 }
 
-                GenerateJavLibrary(shortenedLinks.Where(l => l.Contains("ouo.io")), fileSize, fileFormat, imageCode);
+                GenerateJavLibrary(shortenedLinks.Where(l => !l.Contains("shink")), fileSize, fileFormat, imageCode);
                 GenerateWestern(shortenedLinks, fileSize, fileFormat, imageCode);
                 GeneratePornBB(shortenedLinks, fileSize, fileFormat, imageCode);
             }

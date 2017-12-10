@@ -227,5 +227,13 @@ namespace SharingWorkerTest.VideoInfo
             await Test(info, "CherryPimps_15525-natashastarr");
             await Test(info, "CherryPimps_15920-whitneywright");
         }
+
+        [TestMethod]
+        public async Task TestPIMP()
+        {
+            var info = new PIMP();
+            await Test(info, "PIMP_15472-emberstone");
+            await Test(info, "PIMP_15471-alexagrace");
+        }
     }
 }
