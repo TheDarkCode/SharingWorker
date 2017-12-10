@@ -236,6 +236,7 @@
     <Compile Include="Video\Western\BANG.cs" />
     <Compile Include="Video\Western\CherryPimps.cs" />
     <Compile Include="Video\Western\DDFNetwork.cs" />
+    <Compile Include="Video\Western\DogFartNetwork.cs" />
     <Compile Include="Video\Western\EvilAngel.cs" />
     <Compile Include="Video\Western\HushHushEntertainment.cs" />
     <Compile Include="Video\Western\JulesJordan.cs" />

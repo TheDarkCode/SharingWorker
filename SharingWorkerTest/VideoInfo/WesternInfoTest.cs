@@ -14,7 +14,7 @@ namespace SharingWorkerTest.VideoInfo
         {
             var videoInfo = await info.GetInfo(id);
             Trace.WriteLine(videoInfo.Title);
-            
+
             Assert.IsTrue(!string.IsNullOrEmpty(videoInfo.Title));
         }
 
@@ -234,6 +234,22 @@ namespace SharingWorkerTest.VideoInfo
             var info = new PIMP();
             await Test(info, "PIMP_15472-emberstone");
             await Test(info, "PIMP_15471-alexagrace");
+        }
+
+        [TestMethod]
+        public async Task TestBlackOnBlondes()
+        {
+            var info = new BlacksOnBlondes();
+            await Test(info, "BlacksOnBlondes_riley_reid_melissa_moore");
+            await Test(info, "BlacksOnBlondes_cadence_lux_riley_reyes");
+        }
+
+        [TestMethod]
+        public async Task TestGloryHole()
+        {
+            var info = new GloryHole();
+            await Test(info, "GloryHole_carmen_valentina_daizy_cooper");
+            await Test(info, "GloryHole_riley_reyes");
         }
     }
 }
