@@ -104,6 +104,14 @@ namespace SharingWorkerTest.VideoInfo
         }
 
         [TestMethod]
+        public async Task TestNFBusty()
+        {
+            var info = new NFBusty();
+            await Test(info, "NFBusty_50980");
+            await Test(info, "NFBusty_35559");
+        }
+
+        [TestMethod]
         public async Task TestEvilAngel()
         {
             var info = new EvilAngel();

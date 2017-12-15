@@ -1,20 +1,39 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
 namespace SharingWorker.Video.Western
 {
     [WesternInfo("NubileFilms_")]
-    sealed class NubileFilms : IVideoInfo
+    sealed class NubileFilms : NFNetwork
     {
-        public async Task<VideoInfo> GetInfo(string id)
+        public override async Task<VideoInfo> GetInfo(string id)
         {
-            var url = string.Empty;
-            var ret = new VideoInfo { Title = "", Actresses = "" };
-            var num = id.Replace("NubileFilms_", string.Empty);
+            return await GetInfo("NubileFilms_", "NubileFilms", "http://nubilefilms.com", id);
+        }
+    }
 
-            url = string.Format("http://nubilefilms.com/video/watch/{0}", num);
+    [WesternInfo("NFBusty_")]
+    sealed class NFBusty : NFNetwork
+    {
+        public override async Task<VideoInfo> GetInfo(string id)
+        {
+            return await GetInfo("NFBusty_", "NF Busty", "http://nfbusty.com", id);
+        }
+    }
+
+    abstract class NFNetwork : IVideoInfo
+    {
+        public abstract Task<VideoInfo> GetInfo(string id);
+
+        protected async Task<VideoInfo> GetInfo(string prefix, string brand, string brandUrl, string id)
+        {
+            var ret = new VideoInfo { Title = "", Actresses = "" };
+            var num = id.Replace(prefix, string.Empty);
+            var url = string.Format("{0}/video/watch/{1}", brandUrl, num);
+            
             using (var handler = new HttpClientHandler())
             using (var client = new HttpClient(handler))
             {
@@ -29,6 +48,8 @@ namespace SharingWorker.Video.Western
                     if (end >= 0)
                     {
                         ret.Title = end - start <= 0 ? string.Empty : HttpUtility.HtmlDecode(responseString.Substring(start, end - start));
+                        ret.Title = Regex.Replace(ret.Title, " - S[\\d]+:E[\\d]+", string.Empty);
+                        
                         search = "<span class=\"featuring-modelname model\">";
                         start = responseString.IndexOf(search, end, StringComparison.Ordinal);
                         start += search.Length;
@@ -46,7 +67,7 @@ namespace SharingWorker.Video.Western
                         if (ret.Actresses != null)
                             ret.Actresses = ret.Actresses.TrimEnd();
 
-                        ret.Title = string.Format("[NubileFilms] {0} - {1}", ret.Title, ret.Actresses);
+                        ret.Title = string.Format("[{0}] {1} - {2}", brand, ret.Title, ret.Actresses);
                     }
                 }
             }
