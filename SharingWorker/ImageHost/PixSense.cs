@@ -16,11 +16,6 @@ namespace SharingWorker.ImageHost
 {
     public class PixSense : PropertyChangedBase, IImageHost
     {
-        //class LoginStatus
-        //{
-        //    public string status { get; set; }
-        //    public string user_id { get; set; }
-        //}
 
         class UploadStatus
         {
@@ -92,15 +87,13 @@ namespace SharingWorker.ImageHost
             using (var handler = new HttpClientHandler
             {
                 CookieContainer = cookies, AutomaticDecompression = DecompressionMethods.GZip
-                //Proxy = new WebProxy("proxy.hinet.net:80"),
-                //UseProxy = true,
             })
             using (var client = new HttpClient(handler))
             {
                 client.DefaultRequestHeaders.Add("User-Agent",
                     "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
                 client.DefaultRequestHeaders.ExpectContinue = false;
-                client.DefaultRequestHeaders.Referrer = new Uri("http://www.pixsense.net/");
+                client.DefaultRequestHeaders.Referrer = new Uri("http://www.imgvip.net/");
                 client.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue
                 {
                     NoCache = true,
@@ -118,19 +111,13 @@ namespace SharingWorker.ImageHost
                     new KeyValuePair<string, string>("remember", "true"),
                 });
 
-                using (var response = await client.PostAsync("http://www.pixsense.net/site/index", content))
+                using (var response = await client.PostAsync("http://www.imgvip.net/site/index", content))
                 {
                     var result = await response.Content.ReadAsStringAsync();
                     if (result.IndexOf("logout", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         LoggedIn = true;
                     }
-                    //var login = JsonConvert.DeserializeObject<LoginStatus>(result);
-                    //if (login != null)
-                    //{
-                    //    if(!login.status.Contains("error") && !string.IsNullOrEmpty(login.user_id))
-                    //        LoggedIn = true;
-                    //}
                 }
             }
         }
@@ -143,9 +130,6 @@ namespace SharingWorker.ImageHost
                 {
                     CookieContainer = cookies,
                     AutomaticDecompression = DecompressionMethods.GZip,
-                    //Proxy = new WebProxy("proxy.hinet.net:80"),
-                    //UseProxy = true,
-                    //AutomaticDecompression = DecompressionMethods.GZip,
                 })
                 using (var client = new HttpClient(handler))
                 {
@@ -189,7 +173,7 @@ namespace SharingWorker.ImageHost
                             content.Add(imageContent, "\"upl\"");
                             imageContent.Headers.ContentDisposition.FileName = image.Name;
                             
-                            using (var message = await client.PostAsync("http://www.pixsense.net/site/imageUpload", content))
+                            using (var message = await client.PostAsync("http://www.imgvip.net/site/imageUpload", content))
                             {
                                 var response = await message.Content.ReadAsStringAsync();
                                 
