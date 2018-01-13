@@ -207,7 +207,10 @@ namespace SharingWorker
             IsUploadFinished = false;
             Message = "";
             Blogger.StartPosting();
-            
+
+            UploadInfo.RemoveSignature(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\west.txt");
+            UploadInfo.RemoveSignature(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\west_pornbb.txt");
+
             var rnd = new Random();
             foreach (var uploadInfo in UploadResults)
             {

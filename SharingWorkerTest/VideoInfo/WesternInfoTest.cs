@@ -205,6 +205,14 @@ namespace SharingWorkerTest.VideoInfo
         }
 
         [TestMethod]
+        public async Task TestInterracialPass()
+        {
+            var info = new InterracialPass();
+            await Test(info, "IPass_britney-light-aka-sable-gets-greasy-for-black-dick");
+            await Test(info, "IPass_horny-schoolgirl-britney-take-bbc-in-detention");
+        }
+
+        [TestMethod]
         public async Task TestDDFNetwork()
         {
             var info = new DDFNetwork();

@@ -614,5 +614,15 @@ Format: {2}
             content.Add(signature);
             File.WriteAllLines(filePath, content);
         }
+
+        public static void RemoveSignature(string filePath)
+        {
+            if (!File.Exists(filePath)) return;
+            var content = File.ReadAllText(filePath);
+            var signature = @"[b][color=#cc0000]nanamiyusa's Collection[/color] [/b]: [url=http://blog.epc-jav.com]Erotic Public Cloud[/url]";
+            if (content.IndexOf(signature, StringComparison.Ordinal) < 0) return;
+            
+            File.WriteAllText(filePath, content.Replace(signature, "=="));
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -63,6 +64,13 @@ namespace SharingWorker.Video
             {
                 var rmIdx = fileName.LastIndexOf("_full");
                 if (rmIdx > 0) fileName = fileName.Remove(rmIdx);
+            }
+
+            var vrPrefixes = new[] {"[VR]", "[VR3K]"};
+            var vrPrefix = vrPrefixes.FirstOrDefault(p => fileName.StartsWith(p));
+            if (!string.IsNullOrEmpty(vrPrefix))
+            {
+                fileName = fileName.Replace(vrPrefix, string.Empty);
             }
 
             return fileName;

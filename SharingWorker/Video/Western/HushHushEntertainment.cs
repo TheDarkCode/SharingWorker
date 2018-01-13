@@ -16,6 +16,15 @@ namespace SharingWorker.Video.Western
         }
     }
 
+    [WesternInfo("IPass_")]
+    sealed class InterracialPass : HushHushEntertainment
+    {
+        public override async Task<VideoInfo> GetInfo(string id)
+        {
+            return await GetInfo("IPass_", "InterracialPass", "https://interracialpass.com", id);
+        }
+    }
+
     abstract class HushHushEntertainment : IVideoInfo
     {
         public abstract Task<VideoInfo> GetInfo(string id);
