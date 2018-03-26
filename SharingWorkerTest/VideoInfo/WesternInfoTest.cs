@@ -267,5 +267,12 @@ namespace SharingWorkerTest.VideoInfo
             await Test(info, "GloryHole_carmen_valentina_daizy_cooper");
             await Test(info, "GloryHole_riley_reyes");
         }
+
+        [TestMethod]
+        public async Task TestInterracialBlowbang()
+        {
+            var info = new InterracialBlowbang();
+            await Test(info, "InterracialBlowbang_stella_cox");
+        }
     }
 }

@@ -23,6 +23,15 @@ namespace SharingWorker.Video.Western
         }
     }
 
+    [WesternInfo("InterracialBlowbang_")]
+    sealed class InterracialBlowbang : DogFartNetwork
+    {
+        public override async Task<VideoInfo> GetInfo(string id)
+        {
+            return await GetInfo("InterracialBlowbang_", id);
+        }
+    }
+
     abstract class DogFartNetwork : IVideoInfo
     {
         public abstract Task<VideoInfo> GetInfo(string id);

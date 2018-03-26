@@ -407,9 +407,16 @@ namespace SharingWorker
                 }
                 else
                 {
+                    var firstShortenedLink = linksPage;
+                    if (!isCensored)
+                    {
+                        var ouoShortening = urlShortenings.First(u => u.Name == "Ouo");
+                        firstShortenedLink = await ouoShortening.GetLink(linksPage);
+                    }
+
                     foreach (var urlShortening in urlShortenings.Where(u => u.Enabled))
                     {
-                        var shortenedLink = await urlShortening.GetLink(linksPage);
+                        var shortenedLink = await urlShortening.GetLink(firstShortenedLink);
                         if (!string.IsNullOrEmpty(shortenedLink))
                             shortenedLinks.Add(shortenedLink);
                     }
