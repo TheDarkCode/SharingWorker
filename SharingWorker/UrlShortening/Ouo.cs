@@ -10,6 +10,7 @@ namespace SharingWorker.UrlShortening
     [Export(typeof(IUrlShortening))]
     class Ouo : UrlShortening
     {
+        public override int Order => 2;
         public override string ApiUrl => "http://ouo.io/api/mYNo98PR?s=";
         public override string Name => "Ouo";
         public override bool FirstLinkEnabled => true;

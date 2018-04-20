@@ -40,7 +40,7 @@ namespace SharingWorker
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private static int imageHostIndex;
         private static readonly Random rnd = new Random();
-        private static readonly IEnumerable<IUrlShortening> urlShortenings = IoC.GetAll<IUrlShortening>();
+        private static readonly IEnumerable<IUrlShortening> urlShortenings = IoC.GetAll<IUrlShortening>().OrderBy(u => u.Order);
 
         public static string SecondHostName
         {
@@ -408,11 +408,11 @@ namespace SharingWorker
                 else
                 {
                     var firstShortenedLink = linksPage;
-                    if (!isCensored)
-                    {
-                        var ouoShortening = urlShortenings.First(u => u.Name == "Ouo");
-                        firstShortenedLink = await ouoShortening.GetLink(linksPage);
-                    }
+                    //if (!isCensored)
+                    //{
+                    //    var ouoShortening = urlShortenings.First(u => u.Name == "Ouo");
+                    //    firstShortenedLink = await ouoShortening.GetLink(linksPage);
+                    //}
 
                     foreach (var urlShortening in urlShortenings.Where(u => u.Enabled))
                     {

@@ -10,6 +10,7 @@ namespace SharingWorker.UrlShortening
     [Export(typeof(IUrlShortening))]
     class ShinkIn : UrlShortening
     {
+        public override int Order => 3;
         public override string ApiUrl => "http://shink.me/stxt/0/id/90552/auth_token/VEFsRf?s=";
         public override string Name => "ShinkIn";
 

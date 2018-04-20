@@ -10,6 +10,7 @@ namespace SharingWorker.UrlShortening
     [Export(typeof(IUrlShortening))]
     class EraAc : UrlShortening
     {
+        public override int Order => 1;
         public override string ApiUrl => "https://ewe.ac/g/2CNJW?protocol=http&type=default&url=";
         public override string Name => "ERA.AC";
 

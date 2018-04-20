@@ -57,9 +57,9 @@ namespace SharingWorker
             GetThumbnail = true;
             GetCover = true;
             RarList = new RarListViewModel();
-
+            
             MailHosts = new List<IMailHost>(mailHosts);
-            UrlShortenings = new List<IUrlShortening>(urlShortenings);
+            UrlShortenings = new List<IUrlShortening>(urlShortenings.OrderBy(u => u.Order));
             
             this.windowManager = windowManager;
         }
@@ -290,7 +290,7 @@ namespace SharingWorker
                             uploadInfo.ForumLinks2 = links[1].Trim();
                             uploadCount++;
                         }
-                        else if (links[0].Contains("pixsense"))
+                        else if (links[0].Contains("pixsense") || links[0].Contains("iceimg"))
                         {
                             uploadInfo.WebLinks3 = links[0].Trim();
                             uploadInfo.ForumLinks3 = links[1].Trim();

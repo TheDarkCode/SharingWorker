@@ -21,6 +21,7 @@ namespace SharingWorker.UrlShortening
             public string shortenedUrl { get; set; }
         }
 
+        public virtual int Order { get; }
         public abstract string ApiUrl { get; }
         public abstract string Name { get; }
         public virtual bool FirstLinkEnabled => false;
