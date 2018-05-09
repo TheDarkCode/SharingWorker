@@ -53,5 +53,16 @@ namespace SharingWorkerTest.VideoInfo
 
             Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
         }
-    }
+
+	    [TestMethod]
+	    public async Task Test1pon()
+	    {
+		    var info = await SharingWorker.Video.VideoInfo.GetVideoInfo_1pon("050618_683");
+		    Trace.WriteLine(info.Title);
+		    info = await SharingWorker.Video.VideoInfo.GetVideoInfo_1pon("050818_684");
+		    Trace.WriteLine(info.Title);
+
+		    Assert.IsTrue(!string.IsNullOrEmpty(info.Title));
+	    }
+	}
 }
