@@ -224,9 +224,9 @@ namespace SharingWorker.Video
             }
         }
 
-        private static async Task<string> Get1ponCover(string id)
+        internal static async Task<string> Get1ponCover(string id)
         {
-            var url = string.Format("http://www.1pondo.tv/dyn/ren/movie_details/movie_id/{0}.json", id.Replace("-1pon", string.Empty));
+            var url = string.Format("https://www.1pondo.tv/dyn/phpauto/movie_details/movie_id/{0}.json", id.Replace("-1pon", string.Empty));
 
             using (var handler = new HttpClientHandler())
             using (var client = new HttpClient(handler))

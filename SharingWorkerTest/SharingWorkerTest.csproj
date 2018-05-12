@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileHost\UploadGIGTest.cs" />
+    <Compile Include="FileHost\ZippyshareTest.cs" />
     <Compile Include="Mega\SignupTest.cs" />
     <Compile Include="UrlShorteningTest.cs" />
     <Compile Include="VideoCover\VideoCoverTest.cs" />

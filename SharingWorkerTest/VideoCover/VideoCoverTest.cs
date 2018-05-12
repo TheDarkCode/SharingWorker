@@ -16,5 +16,13 @@ namespace SharingWorkerTest.VideoCover
             Trace.WriteLine(url);
             Assert.IsTrue(!string.IsNullOrEmpty(url));
         }
-    }
+
+	    [TestMethod]
+	    public async Task Test1pon()
+	    {
+		    var url = await SharingWorker.Video.VideoCover.Get1ponCover("051218_686-1pon");
+		    Trace.WriteLine(url);
+		    Assert.IsTrue(!string.IsNullOrEmpty(url));
+	    }
+	}
 }

@@ -34,6 +34,7 @@
             <MenuItem Header="Image" VerticalAlignment="Center">
                 <MenuItem.Resources>
                     <CollectionViewSource x:Key="UrlShorteningCollection" Source="{Binding UrlShortenings}"/>
+                    <CollectionViewSource x:Key="FileHostCollection" Source="{Binding FileHosts}"/>
                 </MenuItem.Resources>
                 <MenuItem.ItemsSource>
                     <CompositeCollection>
@@ -47,7 +48,8 @@
                         <MenuItem Header=" Mega" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetMega}"/>
                         <MenuItem Header=" UploadGIG" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetUploadGIG}"/>
                         <MenuItem Header=" Rapidgator" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetRapidgator}"/>
-                        <MenuItem Header=" Datafile" IsCheckable="True" StaysOpenOnClick="True" IsChecked="{Binding GetDatafile}"/>
+                        <Separator />
+                        <CollectionContainer Collection="{Binding Source={StaticResource FileHostCollection}}" />
                         <Separator />
                         <CollectionContainer Collection="{Binding Source={StaticResource UrlShorteningCollection}}" />
                     </CompositeCollection>
@@ -139,8 +141,7 @@
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
                     <CheckBox Content="ImgRock" IsChecked="{Binding ImgRock.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" Margin="0,0,0,3" FontSize="13"/>
-                    <CheckBox Content="Datafile" IsChecked="{Binding DatafileLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
-                    
+                    <CheckBox Content="Zippyshare" IsChecked="{Binding Zippyshare.LoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13"/>
                 </StackPanel>
                 <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
                     <CheckBox Content="UploadGIG" IsChecked="{Binding UploadGIGLoggedIn}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" FontSize="13" Margin="0,0,0,3"/>

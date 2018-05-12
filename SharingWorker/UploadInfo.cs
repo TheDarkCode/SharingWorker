@@ -48,10 +48,8 @@ namespace SharingWorker
             {
                 if (Rapidgator.GetEnabled)
                     return "Rapidgator";
-                if (UploadGIG.GetEnabled)
-                    return "UploadGIG";
-                if (Datafile.GetEnabled)
-                    return "Datafile";
+                else
+                    return "Zippyshare";
                 return string.Empty;
             }
         }
@@ -255,21 +253,12 @@ namespace SharingWorker
         {
             string imageCode = null;
             string imageCodeBlog = null;
-            bool isCensored = true;
-            var megaBackup = megaLinks;
+			var isUncensored = VideoInfo.IsUncensored(id);
+			var megaBackup = megaLinks;
             var rgBackup = rgLinks;
 
-            var outputId = id;
-            if (((char.IsDigit(id, 0) && !id.StartsWith("00")) || id.Contains("heyzo") || id.Contains("TokyoHot") || id.Contains("gachi") || id.Contains("XXX-AV")
-                || id.Contains("H0930") || id.Contains("h0930") || id.Contains("H4610") || id.Contains("h4610") || id.Contains("C0930") || id.Contains("c0930")
-                || id.Contains("heydouga") || id.Contains("av-sikou") || id.Contains("fc2-ppv") || WesternInfo.Match(id)))
-            {
-                isCensored = false;
-            }
-            else if (RealStreetAngels.Match(id) || SiroutoDouga.Match(id))
-            {
-            }
-            else
+			var outputId = id;
+			if(!isUncensored && !RealStreetAngels.Match(id) && !SiroutoDouga.Match(id))
             {
                 outputId = id.ToUpper();
                 int dash = 0;
@@ -345,32 +334,15 @@ namespace SharingWorker
                     fileSize = VideoUtil.GetFileSizeGB(uploadPath, id) + "GB";
                 }
 
-                var firstLinkSht = urlShortenings.FirstOrDefault(u => u.FirstLinkEnabled);
-                if (firstLinkSht != null && !string.IsNullOrEmpty(megaLinks) && !string.IsNullOrEmpty(rgLinks))
-                {
-                    var allLinks = megaLinks.Split(new string[] { "\\n" }, StringSplitOptions.None);
-                    var firstLine = true;
-                    var sb = new StringBuilder();
-                    foreach (var link in allLinks)
-                    {
-                        if (firstLine)
-                        {
-                            var firstLink = await firstLinkSht.GetLink(link);
-                            if (string.IsNullOrEmpty(firstLink))
-                                firstLink = link;
+                var ouoShortening = urlShortenings.First(u => u.Name == "Ouo");
+				megaLinks = await ShortenFirstLink(ouoShortening, megaLinks);
+				if (rgLinks.Contains("zippyshare"))
+	            {
+		            var eraShortening = urlShortenings.First(u => u.Name == "ERA.AC");
+		            rgLinks = await ShortenFirstLink(eraShortening, rgLinks);
+	            }
 
-                            sb.Append(string.Format("{0}\\n", firstLink));
-                            firstLine = false;
-                        }
-                        else
-                        {
-                            sb.Append(string.Format("{0}\\n", link));
-                        }
-                    }
-                    megaLinks = sb.ToString().TrimEnd("\\n".ToCharArray());
-                }
-
-                string links1 = null, links2 = null;
+	            string links1 = null, links2 = null;
                 switch (rnd.Next(0, 1000) % 2)
                 {
                     case 0:
@@ -403,16 +375,15 @@ namespace SharingWorker
                 if (string.IsNullOrEmpty(linksPage))
                 {
                     await
-                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored, shortenedLinks);
+                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isUncensored, shortenedLinks);
                 }
                 else
                 {
                     var firstShortenedLink = linksPage;
-                    //if (!isCensored)
-                    //{
-                    //    var ouoShortening = urlShortenings.First(u => u.Name == "Ouo");
-                    //    firstShortenedLink = await ouoShortening.GetLink(linksPage);
-                    //}
+                    if (isUncensored)
+                    {
+                        firstShortenedLink = await ouoShortening.GetLink(linksPage);
+                    }
 
                     foreach (var urlShortening in urlShortenings.Where(u => u.Enabled))
                     {
@@ -422,7 +393,7 @@ namespace SharingWorker
                     }
 
                     await
-                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isCensored, shortenedLinks);
+                        GenerateOutput(outputId, fileSize, fileFormat, imageCode, imageCodeBlog, linksPage, linksBackup, isUncensored, shortenedLinks);
                 }
 
                 GenerateJavLibrary(shortenedLinks.Where(l => !l.Contains("shink")), fileSize, fileFormat, imageCode);
@@ -483,14 +454,14 @@ namespace SharingWorker
         }
 
         private async Task GenerateOutput(string outputId, string fileSize, string fileFormat, string imageCode,
-            string imageCodeBlog, string linksPage, LinksBackup linksBackup , bool isCensored,
+            string imageCodeBlog, string linksPage, LinksBackup linksBackup , bool isUncensored,
             IEnumerable<string> shortenedLinks)
         {
             var videoInfoTw = await VideoInfo.QueryVideoInfo(outputId, QueryLang.TW);
 
             GenerateBlogPost(outputId, imageCodeBlog, linksPage, shortenedLinks, linksBackup, videoInfoTw);
 
-            var censored = isCensored ? "有碼" : "無碼";
+            var uncensored = isUncensored ? "無碼" : "有碼";
             
             string linksContent = null;
             foreach (var shortenedLink in shortenedLinks)
@@ -536,7 +507,7 @@ namespace SharingWorker
 
 ==
 
-", title, fileSize, fileFormat, imageCode, linksContent, videoInfoTw.Actresses, censored, SecondHostName);
+", title, fileSize, fileFormat, imageCode, linksContent, videoInfoTw.Actresses, uncensored, SecondHostName);
 
             File.AppendAllText(outputPath_lh, content);
             File.AppendAllText(outputPath_l, content.Replace(Environment.NewLine + "[hide]", string.Empty).Replace("[/hide]" + Environment.NewLine, string.Empty));
@@ -630,6 +601,32 @@ Format: {2}
             if (content.IndexOf(signature, StringComparison.Ordinal) < 0) return;
             
             File.WriteAllText(filePath, content.Replace(signature, "=="));
+        }
+
+        private async Task<string> ShortenFirstLink(IUrlShortening shortening, string links)
+        {
+            if (string.IsNullOrEmpty(links) || shortening == null) return links;
+
+            var allLinks = links.Split(new[] { "\\n" }, StringSplitOptions.None);
+            var firstLine = true;
+            var sb = new StringBuilder();
+            foreach (var link in allLinks)
+            {
+                if (firstLine)
+                {
+                    var firstLink = await shortening.GetLink(link);
+                    if (string.IsNullOrEmpty(firstLink))
+                        firstLink = link;
+
+                    sb.Append($"{firstLink}\\n");
+                    firstLine = false;
+                }
+                else
+                {
+                    sb.Append($"{link}\\n");
+                }
+            }
+            return sb.ToString().TrimEnd("\\n".ToCharArray());
         }
     }
 }

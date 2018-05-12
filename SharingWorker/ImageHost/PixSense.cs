@@ -158,7 +158,7 @@ namespace SharingWorker.ImageHost
                         using (var content = new MultipartFormDataContent(String.Format("---------------------------{0}", boundary)))
                         {
                             content.Add(new ByteArrayContent(Encoding.Default.GetBytes("on")), "\"upload\"");
-                            content.Add(new ByteArrayContent(Encoding.Default.GetBytes("1")), "\"domain\"");
+                            content.Add(new ByteArrayContent(Encoding.Default.GetBytes("7")), "\"domain\"");
                             content.Add(new ByteArrayContent(Encoding.Default.GetBytes("1")), "\"Image[adult]\"");
                             content.Add(new ByteArrayContent(Encoding.Default.GetBytes("0")), "\"optimized\"");
                             content.Add(new ByteArrayContent(Encoding.Default.GetBytes("793")), "\"Image[gallery]\"");
